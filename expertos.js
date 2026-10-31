@@ -359,21 +359,50 @@ const ExpertModule = {
         return;
       }
 
-      const response = await fetch(gasUrl, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(payload)
-      });
+      // Envío al servidor central (Doble canal: directo + proxy serverless)
+      let success = false;
+      let res = null;
 
-      const res = await response.json();
-      if (res.status === "success") {
+      try {
+        const response = await fetch(gasUrl, {
+          method: "POST",
+          mode: "cors",
+          cache: "no-cache",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+        res = await response.json();
+        if (res && res.status === "success") {
+          success = true;
+        }
+      } catch (errDirect) {
+        console.warn("Fallo envío directo de validación, probando proxy serverless:", errDirect.message);
+      }
+
+      if (!success) {
+        try {
+          const proxyRes = await fetch("/api/proxy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (proxyRes.ok) {
+            res = await proxyRes.json();
+            if (res && res.status === "success") {
+              success = true;
+            }
+          }
+        } catch (errProxy) {
+          console.warn("Fallo envío vía proxy serverless:", errProxy.message);
+        }
+      }
+
+      if (success && res) {
         this.showSuccessModal(res.expertId || "EXP-REGISTRADO", false);
       } else {
-        throw new Error(res.message || "Error procesando en el servidor.");
+        throw new Error((res && res.message) || "Error procesando en el servidor.");
       }
 
     } catch (err) {

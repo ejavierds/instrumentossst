@@ -18,7 +18,10 @@ const APP_CONFIG = {
   storageKeySurveyDraft: "sst_hcuamp_survey_draft",
   storageKeyExpertDraft: "sst_hcuamp_expert_draft",
   // Credencial de acceso de seguridad al Dashboard
-  dashboardPassword: "Salud_2026"
+  dashboardPassword: "Salud_2026",
+  // Contacto de la Investigadora Principal
+  investigatorPhone: "+58 424-5028314",
+  investigatorWhatsappUrl: "https://wa.me/584245028314?text=Hola%20Lcda.%20Mar%C3%ADa%20Pargas%2C%20le%20escribo%20con%20una%20consulta%20sobre%20la%20investigaci%C3%B3n%20en%20SST%20del%20HCUAMP."
 };
 
 // 20 Preguntas del Test de Conocimiento sobre Gestión en SST (LOPCYMAT)
@@ -476,17 +479,17 @@ const LIKERT_OPTIONS = [
 const SCORING = {
   // Baremo de Conocimiento: 0-10 Bajo, 11-15 Medio, 16-20 Alto
   getKnowledgeCategory(score) {
-    if (score <= 10) return { level: "Bajo", badgeClass: "bg-red-500/20 text-red-300 border-red-500/40", color: "#ef4444" };
-    if (score <= 15) return { level: "Medio", badgeClass: "bg-amber-500/20 text-amber-300 border-amber-500/40", color: "#f59e0b" };
-    return { level: "Alto", badgeClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40", color: "#10b981" };
+    if (score <= 10) return { level: "Bajo", badgeClass: "bg-rose-50 text-rose-700 border-rose-200", color: "#ef4444" };
+    if (score <= 15) return { level: "Medio", badgeClass: "bg-amber-50 text-amber-800 border-amber-200", color: "#f59e0b" };
+    return { level: "Alto", badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-200", color: "#10b981" };
   },
 
   // Baremo de Necesidades de Formación (Medias): 1-2.50 Baja, 2.51-3.50 Moderada, 3.51-5.00 Alta necesidad
   getLikertCategory(mean) {
     const val = Number(mean);
-    if (val <= 2.50) return { level: "Baja necesidad", badgeClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40", color: "#10b981" };
-    if (val <= 3.50) return { level: "Moderada necesidad", badgeClass: "bg-amber-500/20 text-amber-300 border-amber-500/40", color: "#f59e0b" };
-    return { level: "Alta necesidad", badgeClass: "bg-rose-500/20 text-rose-300 border-rose-500/40", color: "#f43f5e" };
+    if (val <= 2.50) return { level: "Baja necesidad", badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-200", color: "#10b981" };
+    if (val <= 3.50) return { level: "Moderada necesidad", badgeClass: "bg-amber-50 text-amber-800 border-amber-200", color: "#f59e0b" };
+    return { level: "Alta necesidad", badgeClass: "bg-rose-50 text-rose-700 border-rose-200", color: "#f43f5e" };
   }
 };
 

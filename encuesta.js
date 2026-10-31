@@ -586,24 +586,51 @@ const SurveyModule = {
         return;
       }
 
-      // Envío al servidor de aplicaciones
-      const response = await fetch(gasUrl, {
-        method: "POST",
-        mode: "cors",
-        cache: "no-cache",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(payload)
-      });
+      // Envío al servidor central (Doble canal: directo + proxy serverless)
+      let success = false;
+      let result = null;
 
-      const result = await response.json();
+      try {
+        const response = await fetch(gasUrl, {
+          method: "POST",
+          mode: "cors",
+          cache: "no-cache",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+        result = await response.json();
+        if (result && result.status === "success") {
+          success = true;
+        }
+      } catch (errDirect) {
+        console.warn("Fallo envío directo, probando vía proxy serverless:", errDirect.message);
+      }
 
-      if (result.status === "success") {
+      if (!success) {
+        try {
+          const proxyRes = await fetch("/api/proxy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (proxyRes.ok) {
+            result = await proxyRes.json();
+            if (result && result.status === "success") {
+              success = true;
+            }
+          }
+        } catch (errProxy) {
+          console.warn("Fallo envío vía proxy:", errProxy.message);
+        }
+      }
+
+      if (success && result) {
         this.showSuccessModal(result.idRegistro || "REGISTRADO", false);
         this.clearDraft();
       } else {
-        throw new Error(result.message || "Error procesando la solicitud en el servidor.");
+        throw new Error((result && result.message) || "Error procesando la solicitud en el servidor.");
       }
 
     } catch (err) {

@@ -113,46 +113,62 @@ const DashboardModule = {
     const gasUrl = UI.getGasUrl();
     const statusBadge = document.getElementById("dashboard-source-badge");
 
-    if (!gasUrl) {
-      this.isDemoMode = true;
-      if (statusBadge) {
-        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Modo Demostración (Simulado)`;
-        statusBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
-      }
-      this.renderAll(this.demoData);
-      return;
+    if (statusBadge) {
+      statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500 animate-ping"></span> Consultando Base de Datos...`;
+      statusBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-200";
     }
 
-    try {
-      if (statusBadge) {
-        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span> Consultando Base de Datos...`;
-      }
+    let loadedData = null;
 
-      const response = await fetch(`${gasUrl}?action=get_dashboard`, {
-        method: "GET",
-        mode: "cors"
-      });
-
-      const res = await response.json();
-
-      if (res.status === "success" && res.data) {
-        this.isDemoMode = false;
-        this.cachedData = res.data;
-        if (statusBadge) {
-          statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Base de Datos Conectada (En Vivo)`;
-          statusBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+    // 1. Intentar conexión directa al endpoint central configurado
+    if (gasUrl) {
+      try {
+        const response = await fetch(`${gasUrl}?action=get_dashboard`, {
+          method: "GET",
+          mode: "cors"
+        });
+        if (response.ok) {
+          const res = await response.json();
+          if (res && res.status === "success" && res.data) {
+            loadedData = res.data;
+          }
         }
-        this.renderAll(res.data);
-      } else {
-        throw new Error(res.message || "Respuesta inválida de la API");
+      } catch (errDirect) {
+        console.warn("Fallo conexión directa al endpoint central:", errDirect.message);
       }
+    }
 
-    } catch (err) {
-      console.warn("Fallo al obtener datos remotos, activando fallback simulado:", err);
+    // 2. Si falla la conexión directa (ej: restricciones CORS o red), intentar a través del proxy serverless (/api/proxy)
+    if (!loadedData) {
+      try {
+        const proxyResponse = await fetch(`/api/proxy?action=get_dashboard`, {
+          method: "GET"
+        });
+        if (proxyResponse.ok) {
+          const resProxy = await proxyResponse.json();
+          if (resProxy && resProxy.status === "success" && resProxy.data) {
+            loadedData = resProxy.data;
+          }
+        }
+      } catch (errProxy) {
+        console.warn("Fallo conexión vía proxy serverless:", errProxy.message);
+      }
+    }
+
+    // 3. Renderizar datos en vivo o activar contingencia demostrativa
+    if (loadedData) {
+      this.isDemoMode = false;
+      this.cachedData = loadedData;
+      if (statusBadge) {
+        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Base de Datos Conectada (En Vivo)`;
+        statusBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200";
+      }
+      this.renderAll(loadedData);
+    } else {
       this.isDemoMode = true;
       if (statusBadge) {
-        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Modo Demostración (Local)`;
-        statusBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Modo Demostración (Simulado)`;
+        statusBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200";
       }
       this.renderAll(this.demoData);
     }
@@ -387,17 +403,23 @@ const DashboardModule = {
 
     if (this.charts.cargos) this.charts.cargos.destroy();
 
-    const cargos = socioData.cargos || {};
-    const labels = Object.keys(cargos);
-    const dataVals = Object.values(cargos);
+    const cargos = (socioData && socioData.cargos) ? socioData.cargos : {};
+    let labels = Object.keys(cargos);
+    let dataVals = Object.values(cargos);
 
-    const colors = [
+    let colors = [
       "#0284c7", // Sky
       "#6366f1", // Indigo
       "#10b981", // Emerald
       "#f59e0b", // Amber
       "#ec4899"  // Pink
     ];
+
+    if (labels.length === 0) {
+      labels = ["Sin encuestas registradas aún"];
+      dataVals = [1];
+      colors = ["#e2e8f0"];
+    }
 
     this.charts.cargos = new Chart(ctx, {
       type: "doughnut",
@@ -431,26 +453,37 @@ const DashboardModule = {
 
     if (this.charts.formacion) this.charts.formacion.destroy();
 
-    const form = socioData.formacionSST || { "Sí": 0, "No": 0 };
-    const total = (form["Sí"] || 0) + (form["No"] || 0);
+    const form = (socioData && socioData.formacionSST) ? socioData.formacionSST : { "Sí": 0, "No": 0 };
+    const siVal = form["Sí"] || 0;
+    const noVal = form["No"] || 0;
+    const total = siVal + noVal;
+
+    let labels = [
+      `Sí ha recibido formación (${siVal})`,
+      `No ha recibido formación (${noVal})`
+    ];
+    let dataVals = [siVal, noVal];
+    let bgColors = [
+      "rgba(2, 132, 199, 0.85)",  // Sky
+      "rgba(244, 63, 94, 0.85)"   // Rose
+    ];
+
+    if (total === 0) {
+      labels = ["Sin encuestas registradas aún"];
+      dataVals = [1];
+      bgColors = ["#e2e8f0"];
+    }
 
     this.charts.formacion = new Chart(ctx, {
       type: "pie",
       data: {
-        labels: [
-          `Sí ha recibido formación (${form["Sí"] || 0})`,
-          `No ha recibido formación (${form["No"] || 0})`
-        ],
+        labels: labels,
         datasets: [{
-          data: [form["Sí"] || 0, form["No"] || 0],
-          backgroundColor: [
-            "rgba(2, 132, 199, 0.85)",  // Sky
-            "rgba(244, 63, 94, 0.85)"   // Rose
-          ],
+          data: dataVals,
+          backgroundColor: bgColors,
           borderColor: "#ffffff",
           borderWidth: 3
         }]
-      },
       },
       options: {
         responsive: true,
@@ -463,6 +496,7 @@ const DashboardModule = {
           tooltip: {
             callbacks: {
               label: function(context) {
+                if (total === 0) return " 0 registros";
                 const val = context.raw;
                 const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
                 return ` ${val} personas (${pct}%)`;
@@ -483,9 +517,11 @@ const DashboardModule = {
     const elCoherencia = document.getElementById("dash-expert-coherencia");
 
     const crit = expertData.criterios || {};
-    if (elClaridad) elClaridad.innerText = `${crit.claridad || 100}%`;
-    if (elPertinencia) elPertinencia.innerText = `${crit.pertinencia || 100}%`;
-    if (elCoherencia) elCoherencia.innerText = `${crit.coherencia || 100}%`;
+    const totalExp = expertData.total || 0;
+
+    if (elClaridad) elClaridad.innerText = totalExp > 0 ? `${crit.claridad}%` : "100% (Esperando)";
+    if (elPertinencia) elPertinencia.innerText = totalExp > 0 ? `${crit.pertinencia}%` : "100% (Esperando)";
+    if (elCoherencia) elCoherencia.innerText = totalExp > 0 ? `${crit.coherencia}%` : "100% (Esperando)";
 
     // Gráfico de Dictámenes
     const ctx = document.getElementById("chart-expert-dictamenes");
@@ -494,28 +530,38 @@ const DashboardModule = {
     if (this.charts.dictamenes) this.charts.dictamenes.destroy();
 
     const dict = expertData.dictamenes || {};
+    const d1 = dict["Aprobado sin modificaciones"] || 0;
+    const d2 = dict["Aprobado con observaciones"] || 0;
+    const d3 = dict["No Aprobado"] || 0;
+    const totalDict = d1 + d2 + d3;
+
+    let labels = [
+      "Aprobado sin modificaciones",
+      "Aprobado con observaciones",
+      "No Aprobado"
+    ];
+    let dataVals = [d1, d2, d3];
+    let colors = [
+      "#10b981", // Emerald
+      "#f59e0b", // Amber
+      "#ef4444"  // Rose
+    ];
+
+    if (totalDict === 0) {
+      labels = ["En espera de validaciones"];
+      dataVals = [1];
+      colors = ["#e2e8f0"];
+    }
 
     this.charts.dictamenes = new Chart(ctx, {
       type: "doughnut",
       data: {
-        labels: [
-          "Aprobado sin modificaciones",
-          "Aprobado con observaciones",
-          "No Aprobado"
-        ],
+        labels: labels,
         datasets: [{
-          data: [
-            dict["Aprobado sin modificaciones"] || 0,
-            dict["Aprobado con observaciones"] || 0,
-            dict["No Aprobado"] || 0
-          ],
-          backgroundColor: [
-            "#10b981", // Emerald
-            "#f59e0b", // Amber
-            "#ef4444"  // Rose
-          ],
-          borderColor: "#0f172a",
-          borderWidth: 2
+          data: dataVals,
+          backgroundColor: colors,
+          borderColor: "#ffffff",
+          borderWidth: 3
         }]
       },
       options: {
@@ -527,6 +573,10 @@ const DashboardModule = {
             labels: { boxWidth: 10, font: { size: 10 } }
           }
         },
+        cutout: "60%"
+      }
+    });
+  },
         cutout: "60%"
       }
     });
