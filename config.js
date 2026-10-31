@@ -7,15 +7,18 @@
 const APP_CONFIG = {
   appName: "SST-Investiga HCUAMP",
   author: "Lcda. María Pargas",
+  authorRole: "Investigadora Principal",
   institution: "Universidad Nacional Experimental de los Llanos Centrales «Rómulo Gallegos» (UNERG)",
   sede: "Hospital Central Universitario Dr. Antonio María Pineda (HCUAMP) - Barquisimeto",
   year: 2026,
   sheetId: "1Xyy-vs2PJMxunvcCCMACMet9MMNsxq3fG2BkSk5AxDc",
-  // URL por defecto para la Web App de Google Apps Script (también sincronizada con variable de entorno en Vercel)
+  // URL por defecto del Endpoint del Servicio Central
   defaultGasUrl: "https://script.google.com/macros/s/AKfycbwnvzDi1tY360LgFpESlfPMFkr2ZgLenTL-3fIm5E_zyyB0q13gztiTbgY2POTIn34/exec", 
   storageKeyGasUrl: "sst_hcuamp_gas_url",
   storageKeySurveyDraft: "sst_hcuamp_survey_draft",
-  storageKeyExpertDraft: "sst_hcuamp_expert_draft"
+  storageKeyExpertDraft: "sst_hcuamp_expert_draft",
+  // Credencial de acceso de seguridad al Dashboard
+  dashboardPassword: "Salud_2026"
 };
 
 // 20 Preguntas del Test de Conocimiento sobre Gestión en SST (LOPCYMAT)
@@ -526,7 +529,7 @@ const UI = {
     return localStorage.getItem(APP_CONFIG.storageKeyGasUrl) || APP_CONFIG.defaultGasUrl;
   },
 
-  async initVercelEnv() {
+  async initServerEnv() {
     try {
       const response = await fetch('/api/config');
       if (response.ok) {
@@ -537,11 +540,14 @@ const UI = {
           if (inputGas && !localStorage.getItem(APP_CONFIG.storageKeyGasUrl)) {
             inputGas.value = data.gasUrl;
           }
-          console.log("⚙️ Configuración cargada desde Vercel:", data);
         }
+        if (data && data.dashboardPassword) {
+          APP_CONFIG.dashboardPassword = data.dashboardPassword;
+        }
+        console.log("⚙️ Variables de entorno del servidor cargadas exitosamente.");
       }
     } catch (e) {
-      // Si corre en entorno local estático, usa la URL predefinida
+      // Si corre en entorno local estático, usa los valores predefinidos
     }
   },
 

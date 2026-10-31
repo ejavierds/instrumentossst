@@ -1,108 +1,178 @@
 /* ==========================================================================
-   ESTILOS PERSONALIZADOS - GLASSMORPHISM Y PALETA DE SALUD PÚBLICA
+   ESTILOS PERSONALIZADOS - PALETA CLARA CLÍNICA Y GLASSMORPHISM LUMINOSO
+   Investigación: SST HCUAMP 2026 | Investigadora: Lcda. María Pargas
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --primary-blue: #0f4c81;
+  --primary-blue: #0284c7;
+  --primary-dark: #0369a1;
   --secondary-teal: #0d9488;
-  --accent-sky: #0284c7;
-  --bg-gradient-start: #060d1a;
-  --bg-gradient-mid: #0b192c;
-  --bg-gradient-end: #0f172a;
+  --accent-sky: #38bdf8;
+  --bg-light: #f8fafc;
+  --text-main: #0f172a;
+  --text-muted: #475569;
 }
 
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--bg-gradient-start);
+  background-color: #f8fafc;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.12) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(30, 58, 138, 0.20) 0px, transparent 60%);
+    radial-gradient(at 0% 0%, rgba(2, 132, 199, 0.08) 0px, transparent 45%),
+    radial-gradient(at 100% 0%, rgba(13, 148, 136, 0.08) 0px, transparent 45%),
+    radial-gradient(at 50% 100%, rgba(59, 130, 246, 0.05) 0px, transparent 55%);
   background-attachment: fixed;
-  color: #f1f5f9;
+  color: #1e293b;
   min-height: 100vh;
 }
 
 h1, h2, h3, h4, h5, h6, .font-heading {
   font-family: 'Outfit', sans-serif;
+  color: #0f172a;
 }
 
-/* Clases utilitarias Glassmorphism */
+/* ==========================================================================
+   CLASES GLASSMORPHISM CLARO (LUMINOUS GLASS)
+   ========================================================================== */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.70);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 20px 0 rgba(14, 165, 233, 0.05);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.05), 0 5px 15px -3px rgba(15, 23, 42, 0.02);
 }
 
 .glass-card {
-  background: rgba(30, 41, 59, 0.50);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.04);
 }
 
 .glass-card-interactive {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .glass-card-interactive:hover {
-  background: rgba(30, 41, 59, 0.75);
-  border-color: rgba(56, 189, 248, 0.35);
+  background: #ffffff;
+  border-color: rgba(2, 132, 199, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 15px 30px -10px rgba(14, 165, 233, 0.2);
+  box-shadow: 0 12px 24px -6px rgba(2, 132, 199, 0.12);
 }
 
 .glass-nav {
-  background: rgba(10, 15, 29, 0.82);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 15px -2px rgba(15, 23, 42, 0.04);
 }
 
-/* Custom Scrollbars */
+/* ==========================================================================
+   SISTEMA DE TOOLTIPS INFORMATIVOS (INFO HOVERS)
+   ========================================================================== */
+.tooltip-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+}
+
+.tooltip-trigger .tooltip-bubble {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background-color: #0f172a;
+  color: #f8fafc;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: normal;
+  width: max-content;
+  max-width: 260px;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.tooltip-trigger .tooltip-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #0f172a transparent transparent transparent;
+}
+
+.tooltip-trigger:hover .tooltip-bubble,
+.tooltip-trigger:focus .tooltip-bubble {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Botón icono de ayuda */
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+  transition: all 0.15s ease;
+}
+.help-icon:hover {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   BARRA DE DESPLAZAMIENTO Y FORMULARIOS
+   ========================================================================== */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.8);
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.25);
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.45);
+  background: #94a3b8;
 }
 
-/* Glow effects */
-.glow-sky {
-  box-shadow: 0 0 25px -5px rgba(14, 165, 233, 0.4);
-}
-.glow-teal {
-  box-shadow: 0 0 25px -5px rgba(20, 184, 166, 0.4);
-}
-
-/* Custom radio and checkbox accents */
 input[type="radio"]:checked, input[type="checkbox"]:checked {
-  filter: drop-shadow(0 0 4px rgba(14, 165, 233, 0.6));
+  filter: drop-shadow(0 2px 4px rgba(2, 132, 199, 0.3));
 }
 
-/* Animaciones sutiles */
-@keyframes floatSlow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+/* Acordeón para Guía Interactiva */
+details > summary {
+  list-style: none;
+}
+details > summary::-webkit-details-marker {
+  display: none;
 }
 
-.animate-float {
-  animation: floatSlow 5s ease-in-out infinite;
-}
-
-/* Optimizaciones para Impresión de Reporte */
+/* Modo Impresión */
 @media print {
   body {
     background: white !important;

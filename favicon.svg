@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="50%" stop-color="#0f766e" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Background rounded squircle -->
+  <rect x="5" y="5" width="90" height="90" rx="22" fill="url(#grad)" filter="url(#shadow)"/>
+  <!-- Inner border -->
+  <rect x="7" y="7" width="86" height="86" rx="20" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+  <!-- Safety shield with medical cross -->
+  <path d="M50 20 L76 31 C76 56 64 74 50 82 C36 74 24 56 24 31 Z" fill="#ffffff" opacity="0.95"/>
+  <!-- Cross in shield -->
+  <path d="M45 35 H55 V45 H65 V55 H55 V65 H45 V55 H35 V45 H45 Z" fill="#0284c7"/>
+</svg>

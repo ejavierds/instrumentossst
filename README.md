@@ -3,7 +3,7 @@
 **Trabajo de Grado de Maestría en Gerencia de la Salud Pública**  
 **Universidad Nacional Experimental de los Llanos Centrales «Rómulo Gallegos» (UNERG)**  
 **Área de Postgrado • Sede Hospital Central Universitario Dr. Antonio María Pineda (HCUAMP)**  
-**Autora:** Lcda. María Pargas | **Año:** 2026  
+**Investigadora Principal:** Lcda. María Pargas | **Año:** 2026  
 
 ---
 
@@ -12,7 +12,8 @@
 Aplicación web progresiva orientada a la recolección estandarizada, validación metodológica y análisis cuantitativo en tiempo real de los instrumentos de investigación académica aplicados al personal administrativo y de supervisión del **Hospital Central Universitario Dr. Antonio María Pineda (HCUAMP)** en Barquisimeto, Estado Lara.
 
 El estudio se titula:
-> **«Estrategia de Formación en Seguridad y Salud Laboral para Gerentes y Supervisores del HCUAMP, Barquisimeto 2026»**
+> **«Estrategia de Formación en Seguridad y Salud Laboral para Gerentes y Supervisores del HCUAMP, Barquisimeto 2026»**  
+> **Autora e Investigadora:** Lcda. María Pargas
 
 Su objetivo central es diagnosticar el nivel de conocimiento técnico-legal y las necesidades de formación en seguridad y salud en el trabajo sobre la base de los cuatro elementos de gestión de la **LOPCYMAT**:
 1. **Dimensión A:** Delegados de Prevención
@@ -22,13 +23,22 @@ Su objetivo central es diagnosticar el nivel de conocimiento técnico-legal y la
 
 ---
 
+## 🔒 Control de Acceso y Seguridad
+
+- **Módulo 1 (Encuesta al Personal):** Acceso público abierto para los gerentes y supervisores del hospital, precedido por la aceptación obligatoria del Consentimiento Informado.
+- **Módulo 2 (Juicio de Expertos):** Interfaz para especialistas metodológicos y médicos ocupacionales con emisión de dictamen y declaración jurada.
+- **Módulo 3 (Dashboard Estadístico):** Acceso protegido mediante credencial de seguridad.  
+  👉 **Contraseña de Acceso:** `Salud_2026`  
+  *(Permite visualizar los indicadores analíticos consolidados en tiempo real).*
+
+---
+
 ## 🛠️ Stack Tecnológico
 
 - **Frontend:** HTML5 semántico, CSS3 con estética *Glassmorphism* (efectos translúcidos `backdrop-blur`, gradientes suaves de salud pública, bordes sutiles y baja carga cognitiva), Tailwind CSS (vía CDN), Vanilla JavaScript ES6+.
-- **Backend API:** Google Apps Script (GAS) configurado como Web App con soporte completo para peticiones HTTP `doPost` y `doGet` y control de cabeceras CORS.
-- **Base de Datos Cloud:** Google Sheets. ID de documento oficial: `1Xyy-vs2PJMxunvcCCMACMet9MMNsxq3fG2BkSk5AxDc`.
-- **Motor de Analítica y Gráficos:** Chart.js para renderizado dinámico de diagramas de barras, radar, donuts y tarjetas métricas.
-- **Despliegue Continuo (CI/CD):** Preparado con `vercel.json` para despliegue automático en **Vercel** desde repositorio en **GitHub**.
+- **Backend API:** Servicio REST configurado para procesar peticiones HTTP `doPost` y `doGet` con control de cabeceras CORS.
+- **Base de Datos:** Repositorio en la nube con tablas normalizadas (`Respuestas_Encuesta`, `Validacion_Expertos`, `Detalle_Items_Expertos`). ID del documento oficial: `1Xyy-vs2PJMxunvcCCMACMet9MMNsxq3fG2BkSk5AxDc`.
+- **Motor de Analítica y Gráficos:** Chart.js para renderizado dinámico de diagramas de barras, radar, donuts y tarjetas de métricas.
 - **Licencia:** Tecnologías Libres y de Acceso Abierto bajo **Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0)**.
 
 ---
@@ -36,15 +46,19 @@ Su objetivo central es diagnosticar el nivel de conocimiento técnico-legal y la
 ## 📂 Estructura del Proyecto
 
 ```text
-├── index.html          # Interfaz SPA con navegación por pestañas (Encuesta, Expertos, Dashboard, Ajustes)
+├── index.html          # Interfaz SPA con navegación por pestañas (Encuesta, Expertos, Dashboard protegido, Servidor)
 ├── styles.css          # Estilos personalizados: Glassmorphism, paleta hospitalaria, animaciones y modo impresión
-├── config.js          # Estructuras de datos: banco de preguntas (1-20), escala Likert (21-40), matriz de expertos y baremos
-├── encuesta.js        # Módulo 1: Stepper 5 pasos, validación en cliente, baremos en vivo y envío a Sheets
-├── expertos.js        # Módulo 2: Matriz interactiva de 40 ítems (Claridad, Pertinencia, Coherencia) y dictamen oficial
-├── dashboard.js       # Módulo 3: Gráficos Chart.js en tiempo real, KPIs, selector En Vivo / Simulación
-├── Codigo.gs          # Código completo para Google Apps Script (REST API, setup de hojas y cálculo de agregaciones)
-├── vercel.json        # Configuración de despliegue optimizado para la plataforma Vercel
-└── README.md          # Documentación técnica, metodológica y manual de instalación
+├── config.js          # Estructuras de datos: banco de reactivos (1-40), baremos y clave de acceso del dashboard
+├── encuesta.js        # Módulo 1: Flujo en 5 pasos, validación en cliente, baremos en vivo y envío al servidor
+├── expertos.js        # Módulo 2: Matriz interactiva de 40 ítems (Claridad, Pertinencia, Coherencia) y dictamen
+├── dashboard.js       # Módulo 3: Gráficos interactivos en tiempo real, KPIs y alternador de simulación
+├── Codigo.gs          # Código de la API REST para el backend, estructuración de tablas y agregaciones
+├── vercel.json        # Configuración de despliegue optimizado para la plataforma web
+├── api/
+│   ├── config.js      # Endpoint de lectura de variable de entorno del servidor
+│   └── proxy.js       # Proxy seguro para canalización de peticiones HTTP
+├── .env.example       # Plantilla de variable de entorno
+└── README.md          # Documentación técnica, metodológica y créditos de la investigadora
 ```
 
 ---
@@ -80,59 +94,40 @@ Su objetivo central es diagnosticar el nivel de conocimiento técnico-legal y la
 
 ---
 
-## 🚀 Guía de Despliegue del Backend en Google Apps Script
+## 🌐 Configuración del Repositorio y Despliegue
 
-1. Abra la hoja de cálculo de Google Sheets de la investigación:  
-   👉 [Enlace a la Hoja de Google Sheets](https://docs.google.com/spreadsheets/d/1Xyy-vs2PJMxunvcCCMACMet9MMNsxq3fG2BkSk5AxDc/edit)
-2. En la barra superior, seleccione **Extensiones → Apps Script**.
-3. Reemplace todo el contenido del editor con el código de [`Codigo.gs`](Codigo.gs).
-4. Verifique que la variable `SPREADSHEET_ID` contenga el ID del documento:
-   ```javascript
-   const SPREADSHEET_ID = "1Xyy-vs2PJMxunvcCCMACMet9MMNsxq3fG2BkSk5AxDc";
-   ```
-5. En la barra de herramientas del editor, seleccione la función `setupSheets` y haga clic en **Ejecutar**. Esto creará automáticamente las pestañas estructuradas con sus colores y encabezados institucionales:
-   - `Respuestas_Encuesta`
-   - `Validacion_Expertos`
-   - `Detalle_Items_Expertos`
-6. Haga clic en el botón azul superior **Implementar (Deploy) → Nueva implementación**.
-7. En el tipo de implementación (engranaje), elija **Aplicación web**.
-8. Configure los parámetros exactamente así:
-   - **Descripción:** `API REST SST HCUAMP v1`
-   - **Ejecutar como:** `Yo (tu correo de Google)`
-   - **Quién tiene acceso:** `Cualquiera (Anyone)` *(Importante: permite que el formulario web de Vercel envíe las respuestas)*.
-9. Haga clic en **Implementar** y autorice los permisos solicitados.
-10. Copie la **URL de la aplicación web** (con terminación `/exec`).
-11. Abra la aplicación web frontend, vaya a la pestaña **⚙️ Conexión Sheets**, pegue la URL y presione **Guardar Configuración** y **Probar Conexión (Ping)**.
+### 1. Repositorio de Código
+El repositorio oficial del proyecto está vinculado a:
+```bash
+https://github.com/ejavierds/instrumentossst
+```
 
----
-
-## 🌐 Guía de Despliegue en GitHub y Vercel
-
-### Paso 1: Subir el proyecto al repositorio de GitHub
-El repositorio oficial del proyecto es [https://github.com/ejavierds/instrumentossst](https://github.com/ejavierds/instrumentossst).
-Para subir o sincronizar los cambios:
+Para sincronizar los cambios locales con la rama principal:
 ```bash
 git add .
-git commit -m "feat: integracion variable de entorno vercel y endpoint gas"
-git branch -M main
+git commit -m "feat: actualizacion de seguridad y creditos institucionales"
 git push -u origin main
 ```
 
-### Paso 2: Importar y desplegar en Vercel
-1. Inicie sesión en [Vercel](https://vercel.com).
-2. Haga clic en **Add New... → Project**.
-3. Seleccione el repositorio de GitHub `ejavierds/instrumentossst`.
-4. En la configuración del proyecto:
-   - **Framework Preset:** `Other`
-   - **Root Directory:** `./`
-5. **Configurar la Variable de Entorno (Environment Variables):**
-   - En la sección **Environment Variables**, agregue la siguiente clave y valor:
-     - **Key:** `GAS_URL`
-     - **Value:** `https://script.google.com/macros/s/AKfycbwnvzDi1tY360LgFpESlfPMFkr2ZgLenTL-3fIm5E_zyyB0q13gztiTbgY2POTIn34/exec`
-     - **Target:** Seleccione *Production*, *Preview* y *Development*.
-   - Haga clic en **Add**.
-6. Haga clic en **Deploy**.
-7. La aplicación estará en línea inmediatamente. Gracias a la función serverless `/api/config`, el frontend leerá automáticamente la variable de entorno `GAS_URL` desde Vercel sin necesidad de configuraciones manuales adicionales.
+### 2. Variables de Entorno en la Plataforma Web
+En el panel de configuración de su servicio de alojamiento web, configure las siguientes variables de entorno:
+1. **URL del Endpoint del Servicio Central:**
+   - **Nombre de la Variable (Key):** `GAS_URL`
+   - **Valor (Value):** `https://script.google.com/macros/s/AKfycbwnvzDi1tY360LgFpESlfPMFkr2ZgLenTL-3fIm5E_zyyB0q13gztiTbgY2POTIn34/exec`
+2. **Contraseña de Seguridad (Dashboard y Configuración):**
+   - **Nombre de la Variable (Key):** `DASHBOARD_PASSWORD`
+   - **Valor (Value):** `Salud_2026` (o la contraseña personalizada de su preferencia)
+
+Gracias a los endpoints serverless `/api/config` y `/api/auth`, el frontend detecta, sincroniza y valida automáticamente estos parámetros en tiempo de ejecución.
+
+---
+
+## 👩‍⚕️ Créditos de la Investigación
+
+- **Investigadora Principal y Autora:** Lcda. María Pargas
+- **Programa Académico:** Maestría en Gerencia de la Salud Pública
+- **Institución Patrocinante:** Universidad Nacional Experimental de los Llanos Centrales «Rómulo Gallegos» (UNERG)
+- **Sede de Aplicación:** Hospital Central Universitario Dr. Antonio María Pineda (HCUAMP), Barquisimeto, Estado Lara, Venezuela (2026).
 
 ---
 
@@ -141,7 +136,4 @@ git push -u origin main
 Este proyecto ha sido desarrollado bajo la licencia:  
 **Creative Commons Atribución-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0)**
 
-Usted es libre de:
-- **Compartir:** copiar y redistribuir el material en cualquier medio o formato.
-- **Adaptar:** remezclar, transformar y crear a partir del material con fines académicos y de investigación en salud pública.
-- *Bajo los términos de atribución a la autora Lcda. María Pargas, sin fines comerciales y manteniendo la misma licencia libre.*
+Usted es libre de compartir y adaptar el material para fines académicos y científicos, citando debidamente la autoría de la **Lcda. María Pargas** y manteniendo la misma licencia libre.

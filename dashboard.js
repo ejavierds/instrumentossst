@@ -1,6 +1,6 @@
 /**
  * MÓDULO 3: DASHBOARD ESTADÍSTICO (ANALÍTICA EN TIEMPO REAL)
- * Consume datos JSON devueltos por doGet de Google Apps Script y renderiza con Chart.js
+ * Consume datos JSON devueltos por doGet del servidor central y renderiza con Chart.js
  * Incluye dataset simulado representativo para pruebas académicas inmediatas.
  */
 
@@ -97,11 +97,13 @@ const DashboardModule = {
   setupChartDefaults() {
     if (typeof Chart === "undefined") return;
 
-    // Estilos globales de Chart.js para armonizar con Glassmorphism
-    Chart.defaults.color = "#94a3b8"; // Slate-400
+    // Estilos globales de Chart.js para armonizar con la paleta clara Glassmorphism
+    Chart.defaults.color = "#475569"; // Slate-600
     Chart.defaults.font.family = "Outfit, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    Chart.defaults.plugins.tooltip.backgroundColor = "rgba(15, 23, 42, 0.95)";
-    Chart.defaults.plugins.tooltip.borderColor = "rgba(255, 255, 255, 0.1)";
+    Chart.defaults.plugins.tooltip.backgroundColor = "rgba(15, 23, 42, 0.92)";
+    Chart.defaults.plugins.tooltip.titleColor = "#ffffff";
+    Chart.defaults.plugins.tooltip.bodyColor = "#e2e8f0";
+    Chart.defaults.plugins.tooltip.borderColor = "rgba(255, 255, 255, 0.15)";
     Chart.defaults.plugins.tooltip.borderWidth = 1;
     Chart.defaults.plugins.tooltip.padding = 10;
     Chart.defaults.plugins.tooltip.cornerRadius = 8;
@@ -123,7 +125,7 @@ const DashboardModule = {
 
     try {
       if (statusBadge) {
-        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span> Consultando Sheets...`;
+        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span> Consultando Base de Datos...`;
       }
 
       const response = await fetch(`${gasUrl}?action=get_dashboard`, {
@@ -137,7 +139,7 @@ const DashboardModule = {
         this.isDemoMode = false;
         this.cachedData = res.data;
         if (statusBadge) {
-          statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Conectado a Sheets (En Vivo)`;
+          statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Base de Datos Conectada (En Vivo)`;
           statusBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
         }
         this.renderAll(res.data);
@@ -146,10 +148,10 @@ const DashboardModule = {
       }
 
     } catch (err) {
-      console.warn("Fallo al obtener datos reales de Sheets, activando fallback simulado:", err);
+      console.warn("Fallo al obtener datos remotos, activando fallback simulado:", err);
       this.isDemoMode = true;
       if (statusBadge) {
-        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Modo Simulado (Fallo de red GAS)`;
+        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Modo Demostración (Local)`;
         statusBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
       }
       this.renderAll(this.demoData);
@@ -248,7 +250,7 @@ const DashboardModule = {
         scales: {
           y: {
             beginAtZero: true,
-            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            grid: { color: "rgba(0, 0, 0, 0.06)" },
             ticks: { precision: 0 }
           },
           x: {
@@ -297,7 +299,7 @@ const DashboardModule = {
           x: {
             beginAtZero: true,
             max: 5,
-            grid: { color: "rgba(255, 255, 255, 0.05)" }
+            grid: { color: "rgba(0, 0, 0, 0.06)" }
           },
           y: {
             grid: { display: false }
@@ -329,19 +331,19 @@ const DashboardModule = {
           {
             label: "Nivel de Necesidad Percibida (1 a 5)",
             data: [dims.dimA, dims.dimB, dims.dimC, dims.dimD],
-            backgroundColor: "rgba(20, 184, 166, 0.35)", // Teal translucent
-            borderColor: "#14b8a6",
-            pointBackgroundColor: "#0d9488",
+            backgroundColor: "rgba(13, 148, 136, 0.25)", // Teal translucent
+            borderColor: "#0d9488",
+            pointBackgroundColor: "#0f766e",
             pointBorderColor: "#ffffff",
             pointHoverBackgroundColor: "#ffffff",
-            pointHoverBorderColor: "#0d9488",
-            borderWidth: 2,
-            pointRadius: 4
+            pointHoverBorderColor: "#0f766e",
+            borderWidth: 2.5,
+            pointRadius: 4.5
           },
           {
             label: "Umbral Alta Necesidad (3.51)",
             data: [3.51, 3.51, 3.51, 3.51],
-            borderColor: "rgba(244, 63, 94, 0.6)", // Rose
+            borderColor: "rgba(225, 29, 72, 0.8)", // Rose
             borderDash: [4, 4],
             pointRadius: 0,
             fill: false
@@ -354,7 +356,7 @@ const DashboardModule = {
         plugins: {
           legend: {
             position: "bottom",
-            labels: { boxWidth: 12, font: { size: 11 } }
+            labels: { boxWidth: 12, font: { size: 11, family: "Plus Jakarta Sans" } }
           }
         },
         scales: {
@@ -366,11 +368,11 @@ const DashboardModule = {
               backdropColor: "transparent",
               color: "#64748b"
             },
-            grid: { color: "rgba(255, 255, 255, 0.08)" },
-            angleLines: { color: "rgba(255, 255, 255, 0.08)" },
+            grid: { color: "rgba(0, 0, 0, 0.08)" },
+            angleLines: { color: "rgba(0, 0, 0, 0.08)" },
             pointLabels: {
-              font: { size: 11, weight: "bold" },
-              color: "#cbd5e1"
+              font: { size: 11.5, weight: "bold", family: "Outfit" },
+              color: "#0f172a"
             }
           }
         }
@@ -390,11 +392,11 @@ const DashboardModule = {
     const dataVals = Object.values(cargos);
 
     const colors = [
-      "#38bdf8", // Sky
-      "#818cf8", // Indigo
-      "#34d399", // Emerald
-      "#fbbf24", // Amber
-      "#f472b6"  // Pink
+      "#0284c7", // Sky
+      "#6366f1", // Indigo
+      "#10b981", // Emerald
+      "#f59e0b", // Amber
+      "#ec4899"  // Pink
     ];
 
     this.charts.cargos = new Chart(ctx, {
@@ -404,8 +406,8 @@ const DashboardModule = {
         datasets: [{
           data: dataVals,
           backgroundColor: colors.slice(0, labels.length),
-          borderColor: "#0f172a",
-          borderWidth: 2
+          borderColor: "#ffffff",
+          borderWidth: 3
         }]
       },
       options: {
@@ -442,12 +444,13 @@ const DashboardModule = {
         datasets: [{
           data: [form["Sí"] || 0, form["No"] || 0],
           backgroundColor: [
-            "rgba(14, 165, 233, 0.8)",  // Sky
-            "rgba(244, 63, 94, 0.8)"   // Rose
+            "rgba(2, 132, 199, 0.85)",  // Sky
+            "rgba(244, 63, 94, 0.85)"   // Rose
           ],
-          borderColor: "#0f172a",
-          borderWidth: 2
+          borderColor: "#ffffff",
+          borderWidth: 3
         }]
+      },
       },
       options: {
         responsive: true,
@@ -538,7 +541,7 @@ const DashboardModule = {
     if (this.isDemoMode && this.cachedData) {
       this.isDemoMode = false;
       this.renderAll(this.cachedData);
-      UI.showToast("Mostrando datos en vivo desde Google Sheets.", "success");
+      UI.showToast("Mostrando datos en vivo desde la Base de Datos Institucional.", "success");
     } else {
       this.isDemoMode = true;
       this.renderAll(this.demoData);

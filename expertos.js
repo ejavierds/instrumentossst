@@ -116,8 +116,8 @@ const ExpertModule = {
       if (item.section !== currentSection && this.filter === "all") {
         currentSection = item.section;
         html += `
-          <tr class="bg-blue-950/60 border-y border-sky-500/20">
-            <td colspan="5" class="py-2 px-4 text-xs font-bold text-sky-300 tracking-wider uppercase">
+          <tr class="bg-sky-50/90 border-y border-sky-200">
+            <td colspan="5" class="py-2.5 px-4 text-xs font-bold text-sky-900 tracking-wider uppercase">
               ${currentSection}
             </td>
           </tr>
@@ -125,30 +125,30 @@ const ExpertModule = {
       }
 
       html += `
-        <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors" id="expert-row-${item.id}">
+        <tr class="border-b border-slate-200/80 hover:bg-sky-50/50 transition-colors" id="expert-row-${item.id}">
           <!-- Ítem & Contenido -->
           <td class="py-3 px-3.5 align-top">
             <div class="flex items-start gap-2.5">
-              <span class="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-sky-400 border border-slate-700 flex-shrink-0">
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-100 text-sky-700 border border-slate-200 flex-shrink-0">
                 ${item.id}
               </span>
               <div>
-                <span class="text-xs sm:text-sm font-semibold text-slate-200 block">${item.content}</span>
-                <span class="text-[10px] text-slate-400">${item.section}</span>
+                <span class="text-xs sm:text-sm font-semibold text-slate-800 block">${item.content}</span>
+                <span class="text-[10px] text-slate-500">${item.section}</span>
               </div>
             </div>
           </td>
 
           <!-- Claridad (Sí/No) -->
           <td class="py-3 px-2 text-center align-middle">
-            <div class="inline-flex rounded-lg p-0.5 bg-slate-900/80 border border-white/10">
+            <div class="inline-flex rounded-lg p-0.5 bg-slate-100 border border-slate-200">
               <button type="button" 
-                      class="px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${ev.claridad ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}"
+                      class="px-2.5 py-1 text-xs rounded-md font-bold transition-all ${ev.claridad ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}"
                       onclick="ExpertModule.setCriteria(${item.id}, 'claridad', true)">
                 SÍ
               </button>
               <button type="button" 
-                      class="px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${!ev.claridad ? 'bg-rose-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}"
+                      class="px-2.5 py-1 text-xs rounded-md font-bold transition-all ${!ev.claridad ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}"
                       onclick="ExpertModule.setCriteria(${item.id}, 'claridad', false)">
                 NO
               </button>
@@ -157,14 +157,14 @@ const ExpertModule = {
 
           <!-- Pertinencia (Sí/No) -->
           <td class="py-3 px-2 text-center align-middle">
-            <div class="inline-flex rounded-lg p-0.5 bg-slate-900/80 border border-white/10">
+            <div class="inline-flex rounded-lg p-0.5 bg-slate-100 border border-slate-200">
               <button type="button" 
-                      class="px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${ev.pertinencia ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}"
+                      class="px-2.5 py-1 text-xs rounded-md font-bold transition-all ${ev.pertinencia ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}"
                       onclick="ExpertModule.setCriteria(${item.id}, 'pertinencia', true)">
                 SÍ
               </button>
               <button type="button" 
-                      class="px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${!ev.pertinencia ? 'bg-rose-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}"
+                      class="px-2.5 py-1 text-xs rounded-md font-bold transition-all ${!ev.pertinencia ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}"
                       onclick="ExpertModule.setCriteria(${item.id}, 'pertinencia', false)">
                 NO
               </button>
@@ -173,14 +173,14 @@ const ExpertModule = {
 
           <!-- Coherencia (Sí/No) -->
           <td class="py-3 px-2 text-center align-middle">
-            <div class="inline-flex rounded-lg p-0.5 bg-slate-900/80 border border-white/10">
+            <div class="inline-flex rounded-lg p-0.5 bg-slate-100 border border-slate-200">
               <button type="button" 
-                      class="px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${ev.coherencia ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}"
+                      class="px-2.5 py-1 text-xs rounded-md font-bold transition-all ${ev.coherencia ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}"
                       onclick="ExpertModule.setCriteria(${item.id}, 'coherencia', true)">
                 SÍ
               </button>
               <button type="button" 
-                      class="px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${!ev.coherencia ? 'bg-rose-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}"
+                      class="px-2.5 py-1 text-xs rounded-md font-bold transition-all ${!ev.coherencia ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}"
                       onclick="ExpertModule.setCriteria(${item.id}, 'coherencia', false)">
                 NO
               </button>
@@ -192,7 +192,7 @@ const ExpertModule = {
             <input type="text" 
                    value="${ev.observaciones || ''}"
                    placeholder="Sugerencia u observación técnica..."
-                   class="w-full text-xs px-2.5 py-1.5 rounded-lg bg-slate-900/70 border border-white/10 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                   class="w-full text-xs px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                    onchange="ExpertModule.setObservation(${item.id}, this.value)">
           </td>
         </tr>
@@ -373,12 +373,12 @@ const ExpertModule = {
       if (res.status === "success") {
         this.showSuccessModal(res.expertId || "EXP-REGISTRADO", false);
       } else {
-        throw new Error(res.message || "Error procesando en Google Apps Script.");
+        throw new Error(res.message || "Error procesando en el servidor.");
       }
 
     } catch (err) {
       console.error("Error al registrar validación:", err);
-      UI.showToast("No se pudo conectar a la base de datos de Google Sheets. Verifique la URL de la Web App.", "error");
+      UI.showToast("No se pudo conectar a la base de datos institucional. Verifique el endpoint del servidor.", "error");
       const confirmDemo = confirm("¿Desea asentar el dictamen del experto en modo local/demostración académica?");
       if (confirmDemo) {
         const simId = "EXP-OFFLINE-" + Math.floor(Math.random() * 899 + 100);

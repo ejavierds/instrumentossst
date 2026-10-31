@@ -98,41 +98,56 @@ const SurveyModule = {
     let currentDimension = "";
     let html = "";
 
+    // Diccionario de tooltips informativos por dimensión
+    const dimensionTooltips = {
+      A: "Los Delegados de Prevención son representantes electos de los trabajadores encargados de la consulta y fiscalización de condiciones de trabajo (Art. 41 LOPCYMAT).",
+      B: "El Comité de Seguridad y Salud Laboral (CSSL) es un órgano paritario y colegiado para la consulta y control de políticas de SST (Art. 46 LOPCYMAT).",
+      C: "El Servicio de Seguridad y Salud en el Trabajo (SSST) es una estructura técnica multidisciplinaria de carácter obligatorio para el hospital (Art. 39 LOPCYMAT).",
+      D: "El Programa de Seguridad y Salud en el Trabajo (PSST) es el instrumento técnico obligatorio elaborado según Norma Técnica NT-01-2008 de INPSASEL."
+    };
+
     KNOWLEDGE_QUESTIONS.forEach((q, idx) => {
       if (q.dimension !== currentDimension) {
         currentDimension = q.dimension;
+        const tip = dimensionTooltips[q.dimension] || "";
         html += `
-          <div class="pt-6 pb-2 border-b border-white/10 mb-4">
-            <div class="flex items-center gap-2">
-              <span class="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold text-xs border border-sky-400/30">
-                Dim ${q.dimension}
+          <div class="pt-6 pb-2 border-b border-slate-200 mb-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs border border-sky-200 shadow-sm">
+                  Dim ${q.dimension}
+                </span>
+                <h4 class="text-base font-bold text-slate-900">${q.dimensionName}</h4>
+              </div>
+              <span class="tooltip-trigger">
+                <span class="help-icon" title="Información técnica">?</span>
+                <span class="tooltip-bubble">${tip}</span>
               </span>
-              <h4 class="text-base font-semibold text-slate-100">${q.dimensionName}</h4>
             </div>
-            <p class="text-xs text-slate-400 mt-1">Preguntas correspondientes al componente técnico y legal de esta dimensión.</p>
+            <p class="text-xs text-slate-500 mt-1">Componente técnico y legal sobre la gestión institucional en el HCUAMP.</p>
           </div>
         `;
       }
 
       html += `
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 mb-4 hover:border-sky-500/30 transition-all duration-200" id="q-card-${q.id}">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 mb-4 shadow-sm hover:border-sky-400 hover:shadow-md transition-all duration-200" id="q-card-${q.id}">
           <div class="flex items-start gap-3">
-            <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/30">
+            <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-sky-50 text-sky-700 border border-sky-200 flex-shrink-0">
               #${q.id}
             </span>
             <div class="flex-1">
-              <p class="text-sm sm:text-base font-medium text-slate-200 leading-snug">${q.question}</p>
+              <p class="text-sm sm:text-base font-semibold text-slate-800 leading-snug">${q.question}</p>
               
               <div class="grid grid-cols-1 gap-2.5 mt-3.5">
                 ${q.options.map(opt => `
-                  <label class="flex items-center p-3 rounded-xl border border-white/5 bg-slate-900/40 hover:bg-sky-950/40 hover:border-sky-500/40 cursor-pointer transition-all option-label group">
+                  <label class="flex items-center p-3 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-sky-50 hover:border-sky-300 cursor-pointer transition-all option-label group">
                     <input type="radio" 
                            name="k_question_${q.id}" 
                            value="${opt.key}" 
-                           class="w-4 h-4 text-sky-500 bg-slate-800 border-slate-600 focus:ring-sky-500 focus:ring-offset-slate-900"
+                           class="w-4 h-4 text-sky-600 bg-white border-slate-300 focus:ring-sky-500"
                            onchange="SurveyModule.onKnowledgeAnswer(${q.id}, '${opt.key}')">
-                    <span class="ml-3 text-xs sm:text-sm text-slate-300 group-hover:text-white font-medium">
-                      <strong class="text-sky-400 mr-1">${opt.key})</strong> ${opt.text}
+                    <span class="ml-3 text-xs sm:text-sm text-slate-700 group-hover:text-slate-900 font-medium">
+                      <strong class="text-sky-600 mr-1 font-bold">${opt.key})</strong> ${opt.text}
                     </span>
                   </label>
                 `).join('')}
@@ -153,43 +168,57 @@ const SurveyModule = {
     let currentDimension = "";
     let html = "";
 
+    const likertTooltips = {
+      A: "Evaluación de la necesidad formativa en torno a la actuación, elección y límites legales de los Delegados de Prevención.",
+      B: "Evaluación de la necesidad formativa respecto al funcionamiento del Comité paritario (CSSL) y redacción técnica de actas.",
+      C: "Evaluación sobre infraestructura, perfiles multidisciplinarios y vigilancia epidemiológica hospitalaria del SSST.",
+      D: "Evaluación de necesidades sobre análisis de procesos peligrosos, planes de contingencia y llenado de formatos NT-04-2023."
+    };
+
     LIKERT_ITEMS.forEach((item) => {
       if (item.dimension !== currentDimension) {
         currentDimension = item.dimension;
+        const tip = likertTooltips[item.dimension] || "";
         html += `
-          <div class="pt-6 pb-2 border-b border-white/10 mb-4">
-            <div class="flex items-center gap-2">
-              <span class="w-7 h-7 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold text-xs border border-teal-400/30">
-                Dim ${item.dimension}
+          <div class="pt-6 pb-2 border-b border-slate-200 mb-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-xs border border-teal-200 shadow-sm">
+                  Dim ${item.dimension}
+                </span>
+                <h4 class="text-base font-bold text-slate-900">${item.dimensionName}</h4>
+              </div>
+              <span class="tooltip-trigger">
+                <span class="help-icon" title="Criterio de la dimensión">?</span>
+                <span class="tooltip-bubble">${tip}</span>
               </span>
-              <h4 class="text-base font-semibold text-slate-100">${item.dimensionName}</h4>
             </div>
-            <p class="text-xs text-slate-400 mt-1">Califique la prioridad de formación percibida para el desempeño gerencial en esta área.</p>
+            <p class="text-xs text-slate-500 mt-1">Califique la prioridad de formación percibida para el desempeño gerencial en esta área.</p>
           </div>
         `;
       }
 
       html += `
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 mb-4 hover:border-teal-500/30 transition-all duration-200" id="l-card-${item.id}">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 mb-4 shadow-sm hover:border-teal-400 hover:shadow-md transition-all duration-200" id="l-card-${item.id}">
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-start gap-3 flex-1">
-              <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/30 flex-shrink-0">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-teal-50 text-teal-700 border border-teal-200 flex-shrink-0">
                 Ítem ${item.id}
               </span>
-              <p class="text-sm font-medium text-slate-200 leading-snug">${item.text}</p>
+              <p class="text-sm font-semibold text-slate-800 leading-snug">${item.text}</p>
             </div>
 
             <!-- Radio scale 1 to 5 -->
-            <div class="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-2 bg-slate-900/60 p-1.5 rounded-xl border border-white/5">
+            <div class="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-2 bg-slate-100/80 p-1.5 rounded-xl border border-slate-200">
               ${LIKERT_OPTIONS.map(opt => `
-                <label class="flex flex-col items-center cursor-pointer px-2 py-1.5 rounded-lg hover:bg-teal-950/60 transition-all group text-center" title="${opt.label}">
+                <label class="flex flex-col items-center cursor-pointer px-2.5 py-1.5 rounded-lg hover:bg-teal-50 hover:text-teal-700 transition-all group text-center" title="${opt.label}">
                   <input type="radio" 
                          name="l_item_${item.id}" 
                          value="${opt.value}" 
-                         class="w-4 h-4 text-teal-500 bg-slate-800 border-slate-600 focus:ring-teal-500 focus:ring-offset-slate-900"
+                         class="w-4 h-4 text-teal-600 bg-white border-slate-300 focus:ring-teal-500"
                          onchange="SurveyModule.onLikertAnswer(${item.id}, ${opt.value})">
-                  <span class="text-[11px] font-semibold text-slate-400 group-hover:text-teal-300 mt-1">${opt.value}</span>
-                  <span class="text-[9px] text-slate-500 hidden sm:inline-block max-w-[50px] leading-tight truncate">${opt.label}</span>
+                  <span class="text-xs font-bold text-slate-700 group-hover:text-teal-700 mt-1">${opt.value}</span>
+                  <span class="text-[9px] text-slate-500 hidden sm:inline-block max-w-[55px] leading-tight truncate">${opt.label}</span>
                 </label>
               `).join('')}
             </div>
@@ -421,13 +450,13 @@ const SurveyModule = {
       }
       if (stepIndicator) {
         if (i < this.currentStep) {
-          stepIndicator.className = "flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500 text-white font-bold text-xs ring-4 ring-emerald-500/20";
+          stepIndicator.className = "flex items-center justify-center w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs ring-4 ring-emerald-100 shadow-sm";
           stepIndicator.innerHTML = "✓";
         } else if (i === this.currentStep) {
-          stepIndicator.className = "flex items-center justify-center w-8 h-8 rounded-full bg-sky-500 text-white font-bold text-xs ring-4 ring-sky-500/30";
+          stepIndicator.className = "flex items-center justify-center w-8 h-8 rounded-full bg-sky-600 text-white font-bold text-xs ring-4 ring-sky-100 shadow-sm";
           stepIndicator.innerHTML = String(i);
         } else {
-          stepIndicator.className = "flex items-center justify-center w-8 h-8 rounded-full bg-slate-800 text-slate-400 font-bold text-xs border border-white/10";
+          stepIndicator.className = "flex items-center justify-center w-8 h-8 rounded-full bg-white text-slate-500 font-bold text-xs border border-slate-300 shadow-sm";
           stepIndicator.innerHTML = String(i);
         }
       }
@@ -454,67 +483,67 @@ const SurveyModule = {
     container.innerHTML = `
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
         <!-- Ficha Sociodemográfica -->
-        <div class="bg-slate-900/50 border border-white/10 rounded-2xl p-4">
-          <h4 class="text-xs font-semibold tracking-wider text-slate-400 uppercase mb-3 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-sky-400"></span> Datos Sociodemográficos y Laborales
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <h4 class="text-xs font-bold tracking-wider text-slate-600 uppercase mb-3.5 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> Datos Sociodemográficos y Laborales
           </h4>
-          <dl class="space-y-2 text-xs sm:text-sm">
-            <div class="flex justify-between border-b border-white/5 pb-1"><dt class="text-slate-400">Cargo HCUAMP:</dt><dd class="font-medium text-slate-200">${socio.cargo}</dd></div>
-            <div class="flex justify-between border-b border-white/5 pb-1"><dt class="text-slate-400">Edad y Sexo:</dt><dd class="font-medium text-slate-200">${socio.edad} años | ${socio.sexo}</dd></div>
-            <div class="flex justify-between border-b border-white/5 pb-1"><dt class="text-slate-400">Nivel Instrucción:</dt><dd class="font-medium text-slate-200">${socio.nivelInstruccion}</dd></div>
-            <div class="flex justify-between border-b border-white/5 pb-1"><dt class="text-slate-400">Experiencia Supervisión:</dt><dd class="font-medium text-slate-200">${socio.experienciaAnos} años</dd></div>
-            <div class="flex justify-between border-b border-white/5 pb-1"><dt class="text-slate-400">Condición Laboral:</dt><dd class="font-medium text-slate-200">${socio.condicionLaboral}</dd></div>
-            <div class="flex justify-between border-b border-white/5 pb-1"><dt class="text-slate-400">Personal a cargo:</dt><dd class="font-medium text-slate-200">~${socio.supervisadosAprox} personas</dd></div>
-            <div class="flex justify-between"><dt class="text-slate-400">Capacitación SST previa:</dt><dd class="font-medium text-slate-200">${socio.formacionPrevia} ${socio.tipoFormacion !== 'N/A' ? `(${socio.tipoFormacion})` : ''}</dd></div>
+          <dl class="space-y-2.5 text-xs sm:text-sm">
+            <div class="flex justify-between border-b border-slate-100 pb-1.5"><dt class="text-slate-500">Cargo HCUAMP:</dt><dd class="font-semibold text-slate-800">${socio.cargo}</dd></div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5"><dt class="text-slate-500">Edad y Sexo:</dt><dd class="font-semibold text-slate-800">${socio.edad} años | ${socio.sexo}</dd></div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5"><dt class="text-slate-500">Nivel Instrucción:</dt><dd class="font-semibold text-slate-800">${socio.nivelInstruccion}</dd></div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5"><dt class="text-slate-500">Experiencia Supervisión:</dt><dd class="font-semibold text-slate-800">${socio.experienciaAnos} años</dd></div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5"><dt class="text-slate-500">Condición Laboral:</dt><dd class="font-semibold text-slate-800">${socio.condicionLaboral}</dd></div>
+            <div class="flex justify-between border-b border-slate-100 pb-1.5"><dt class="text-slate-500">Personal a cargo:</dt><dd class="font-semibold text-slate-800">~${socio.supervisadosAprox} personas</dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Capacitación SST previa:</dt><dd class="font-semibold text-slate-800">${socio.formacionPrevia} ${socio.tipoFormacion !== 'N/A' ? `(${socio.tipoFormacion})` : ''}</dd></div>
           </dl>
         </div>
 
         <!-- Ficha de Diagnóstico Obtenido -->
-        <div class="bg-slate-900/50 border border-white/10 rounded-2xl p-4 flex flex-col justify-between">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
-            <h4 class="text-xs font-semibold tracking-wider text-slate-400 uppercase mb-3 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-teal-400"></span> Diagnóstico Cuantitativo del Instrumento
+            <h4 class="text-xs font-bold tracking-wider text-slate-600 uppercase mb-3.5 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span> Diagnóstico Cuantitativo Obtenido
             </h4>
             
             <!-- Diagnóstico de Conocimiento -->
-            <div class="p-3 bg-white/5 rounded-xl border border-white/5 mb-3">
+            <div class="p-3.5 bg-sky-50/70 rounded-xl border border-sky-100 mb-3">
               <div class="flex justify-between items-center mb-1">
-                <span class="text-xs text-slate-300 font-medium">Nivel de Conocimiento (LOPCYMAT):</span>
-                <span class="px-2 py-0.5 rounded-full text-xs font-bold border ${kCat.badgeClass}">${kCat.level}</span>
+                <span class="text-xs text-slate-700 font-semibold">Nivel de Conocimiento (LOPCYMAT):</span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${kCat.badgeClass}">${kCat.level}</span>
               </div>
               <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-black text-white">${kScore.totalScore}</span>
-                <span class="text-xs text-slate-400">de 20 puntos posibles</span>
+                <span class="text-3xl font-extrabold text-slate-900">${kScore.totalScore}</span>
+                <span class="text-xs text-slate-500">de 20 puntos posibles</span>
               </div>
-              <div class="grid grid-cols-4 gap-1 text-[10px] text-slate-400 mt-2 text-center">
-                <div class="bg-black/30 p-1 rounded">Dim A: ${kScore.dimA}/5</div>
-                <div class="bg-black/30 p-1 rounded">Dim B: ${kScore.dimB}/5</div>
-                <div class="bg-black/30 p-1 rounded">Dim C: ${kScore.dimC}/5</div>
-                <div class="bg-black/30 p-1 rounded">Dim D: ${kScore.dimD}/5</div>
+              <div class="grid grid-cols-4 gap-1.5 text-[11px] text-slate-600 mt-2.5 text-center font-medium">
+                <div class="bg-white p-1 rounded border border-slate-200">Dim A: ${kScore.dimA}/5</div>
+                <div class="bg-white p-1 rounded border border-slate-200">Dim B: ${kScore.dimB}/5</div>
+                <div class="bg-white p-1 rounded border border-slate-200">Dim C: ${kScore.dimC}/5</div>
+                <div class="bg-white p-1 rounded border border-slate-200">Dim D: ${kScore.dimD}/5</div>
               </div>
             </div>
 
             <!-- Diagnóstico de Necesidades -->
-            <div class="p-3 bg-white/5 rounded-xl border border-white/5">
+            <div class="p-3.5 bg-teal-50/70 rounded-xl border border-teal-100">
               <div class="flex justify-between items-center mb-1">
-                <span class="text-xs text-slate-300 font-medium">Necesidades de Formación (Likert):</span>
-                <span class="px-2 py-0.5 rounded-full text-xs font-bold border ${lCat.badgeClass}">${lCat.level}</span>
+                <span class="text-xs text-slate-700 font-semibold">Necesidades de Formación (Likert):</span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${lCat.badgeClass}">${lCat.level}</span>
               </div>
               <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-black text-white">${lStats.overallMean.toFixed(2)}</span>
-                <span class="text-xs text-slate-400">media global (escala 1-5)</span>
+                <span class="text-3xl font-extrabold text-slate-900">${lStats.overallMean.toFixed(2)}</span>
+                <span class="text-xs text-slate-500">media global (escala 1-5)</span>
               </div>
-              <div class="grid grid-cols-4 gap-1 text-[10px] text-slate-400 mt-2 text-center">
-                <div class="bg-black/30 p-1 rounded">Dim A: ${lStats.dimA.toFixed(1)}</div>
-                <div class="bg-black/30 p-1 rounded">Dim B: ${lStats.dimB.toFixed(1)}</div>
-                <div class="bg-black/30 p-1 rounded">Dim C: ${lStats.dimC.toFixed(1)}</div>
-                <div class="bg-black/30 p-1 rounded">Dim D: ${lStats.dimD.toFixed(1)}</div>
+              <div class="grid grid-cols-4 gap-1.5 text-[11px] text-slate-600 mt-2.5 text-center font-medium">
+                <div class="bg-white p-1 rounded border border-slate-200">Dim A: ${lStats.dimA.toFixed(1)}</div>
+                <div class="bg-white p-1 rounded border border-slate-200">Dim B: ${lStats.dimB.toFixed(1)}</div>
+                <div class="bg-white p-1 rounded border border-slate-200">Dim C: ${lStats.dimC.toFixed(1)}</div>
+                <div class="bg-white p-1 rounded border border-slate-200">Dim D: ${lStats.dimD.toFixed(1)}</div>
               </div>
             </div>
           </div>
 
-          <p class="text-[11px] text-slate-400 italic mt-3 text-center">
-            Al presionar "Confirmar y Enviar Instrumento", sus respuestas serán registradas de forma confidencial en la base de datos de investigación.
+          <p class="text-[11px] text-slate-500 italic mt-3 text-center">
+            Investigadora: <strong>Lcda. María Pargas</strong> • Al confirmar, sus datos serán registrados confidencialmente en el repositorio institucional.
           </p>
         </div>
       </div>
@@ -532,7 +561,7 @@ const SurveyModule = {
           <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg> Guardando en Sheets...
+          </svg> Guardando en Base de Datos...
         `;
       }
 
@@ -548,7 +577,7 @@ const SurveyModule = {
 
       const gasUrl = UI.getGasUrl();
 
-      // Si la URL de GAS no está configurada, mostramos simulación exitosa y guiamos al usuario
+      // Si la URL del servidor no está configurada, mostramos simulación exitosa
       if (!gasUrl) {
         await new Promise(r => setTimeout(r, 1200)); // Simula latencia de red
         const simulatedId = "ENC-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-SIM" + Math.floor(Math.random() * 900 + 100);
@@ -557,8 +586,7 @@ const SurveyModule = {
         return;
       }
 
-      // Envío real a Google Apps Script
-      // Usamos Content-Type text/plain en el fetch para evitar preflight CORS en Google Apps Script Web Apps
+      // Envío al servidor de aplicaciones
       const response = await fetch(gasUrl, {
         method: "POST",
         mode: "cors",
@@ -580,10 +608,8 @@ const SurveyModule = {
 
     } catch (err) {
       console.error("Error al enviar encuesta:", err);
-      // Fallback amigable: si falló la conexión por CORS/red pero se capturó
-      UI.showToast("Error de conexión al enviar. Verifique su conexión o URL de Web App en Ajustes.", "error");
-      // Permitir continuar en modo offline/demostración si el usuario lo desea
-      const confirmDemo = confirm("No se pudo conectar con la API de Google Apps Script. ¿Desea registrar el comprobante localmente como demostración académica?");
+      UI.showToast("Error de conexión al enviar. Verifique su conexión o endpoint del servidor.", "error");
+      const confirmDemo = confirm("No se pudo conectar con el servidor central. ¿Desea registrar el comprobante localmente como demostración académica?");
       if (confirmDemo) {
         const simulatedId = "ENC-OFFLINE-" + Math.floor(Math.random() * 9000 + 1000);
         this.showSuccessModal(simulatedId, true);
@@ -604,9 +630,9 @@ const SurveyModule = {
     if (codeEl) codeEl.innerText = idRegistro;
     if (messageEl) {
       if (isDemo) {
-        messageEl.innerText = "¡Instrumento completado exitosamente! (Modo Simulación / Offline: configure la URL de Google Apps Script en la pestaña de Ajustes para guardar en Sheets).";
+        messageEl.innerText = "¡Instrumento completado exitosamente! (Modo Demostración Local: configure la URL del Servidor Central en Ajustes para sincronización remota).";
       } else {
-        messageEl.innerText = "¡Instrumento registrado y consolidado exitosamente en la base de datos de Google Sheets del HCUAMP!";
+        messageEl.innerText = "¡Instrumento registrado y consolidado exitosamente en la base de datos institucional de investigación del HCUAMP!";
       }
     }
 

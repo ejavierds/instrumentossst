@@ -1,13 +1,13 @@
 /**
  * =========================================================================================
- * BACKEND API REST - GOOGLE APPS SCRIPT (GAS)
+ * BACKEND API REST - SERVICIO CENTRAL INSTITUCIONAL (HCUAMP 2026)
  * Proyecto: Estrategia de Formación en SST para Gerentes y Supervisores del HCUAMP (2026)
  * Autora: Lcda. María Pargas | Maestría en Gerencia de la Salud Pública - UNERG
- * Base de Datos: Google Sheets (ID: 1Xyy-vs2PJMxunvcCCMACMet9MMNsxq3fG2BkSk5AxDc)
+ * Repositorio Central de Datos (ID: 1Xyy-vs2PJMxunvcCCMACMet9MMNsxq3fG2BkSk5AxDc)
  * =========================================================================================
  */
 
-// ID de la hoja de cálculo de Google Sheets
+// ID del documento del repositorio central
 const SPREADSHEET_ID = "1Xyy-vs2PJMxunvcCCMACMet9MMNsxq3fG2BkSk5AxDc";
 
 // Nombres de las pestañas
@@ -19,8 +19,8 @@ const SHEETS = {
 };
 
 /**
- * Función de inicialización y formateo de la Hoja de Cálculo.
- * Ejecutar una vez desde el editor de Google Apps Script para crear las pestañas y encabezados.
+ * Función de inicialización y formateo del Repositorio de Datos.
+ * Ejecutar una vez desde el editor del servicio para crear las tablas y encabezados.
  */
 function setupSheets() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -73,7 +73,7 @@ function setupSheets() {
   ];
   styleHeaders(itemDetailSheet, itemDetailHeaders, "#0369a1");
 
-  Logger.log("✅ Hojas y encabezados configurados exitosamente en Google Sheets.");
+  Logger.log("✅ Tablas y encabezados configurados exitosamente en el repositorio central.");
 }
 
 function styleHeaders(sheet, headers, hexColor) {
@@ -192,7 +192,7 @@ function handleSurveySubmission(ss, data) {
 
   return createJsonResponse({
     status: "success",
-    message: "Encuesta guardada con éxito en Google Sheets.",
+    message: "Encuesta guardada con éxito en el repositorio central institucional.",
     idRegistro: idRegistro,
     totalScore: scores.totalScore,
     knowledgeLevel: scores.level,
