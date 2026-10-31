@@ -159,13 +159,20 @@ const DashboardModule = {
     if (loadedData) {
       this.isDemoMode = false;
       this.cachedData = loadedData;
+      console.log("📊 [Dashboard SST] Datos recibidos del Repositorio Central:", loadedData);
+
+      const sheetName = (loadedData.summary && loadedData.summary.sheetDetected) ? loadedData.summary.sheetDetected : "Respuestas_Encuesta";
+      const totalEnc = (loadedData.summary && loadedData.summary.totalEncuestados !== undefined) ? loadedData.summary.totalEncuestados : 0;
+
       if (statusBadge) {
-        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Base de Datos Conectada (En Vivo)`;
+        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Base de Datos Conectada (${totalEnc} reg.)`;
+        statusBadge.title = `Pestaña procesada: ${sheetName}. Total registros: ${totalEnc}`;
         statusBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200";
       }
       this.renderAll(loadedData);
     } else {
       this.isDemoMode = true;
+      console.warn("⚠️ [Dashboard SST] No se pudieron obtener datos del servidor; activando dataset de simulación académica.");
       if (statusBadge) {
         statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Modo Demostración (Simulado)`;
         statusBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200";
@@ -573,10 +580,6 @@ const DashboardModule = {
             labels: { boxWidth: 10, font: { size: 10 } }
           }
         },
-        cutout: "60%"
-      }
-    });
-  },
         cutout: "60%"
       }
     });

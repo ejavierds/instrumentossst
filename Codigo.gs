@@ -272,7 +272,7 @@ function handleExpertSubmission(ss, data) {
 
 /**
  * =========================================================================================
- * MANEJADOR HTTP GET (doGet) - Lectura y Analítica para el Dashboard
+ * MANEJADOR HTTP GET (doGet) - Lectura, Diagnóstico y Analítica para el Dashboard
  * =========================================================================================
  */
 function doGet(e) {
@@ -281,7 +281,42 @@ function doGet(e) {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
     if (action === "ping") {
-      return createJsonResponse({ status: "success", message: "API REST SST HCUAMP activa.", timestamp: new Date() });
+      return createJsonResponse({ 
+        status: "success", 
+        message: "API REST SST HCUAMP activa.", 
+        spreadsheetId: SPREADSHEET_ID,
+        timestamp: new Date() 
+      });
+    }
+
+    // Acción de diagnóstico profundo de hojas, filas y columnas del repositorio central
+    if (action === "inspect_sheets") {
+      const sheetsList = ss.getSheets().map(function(s) {
+        const lastRow = s.getLastRow();
+        const lastCol = s.getLastColumn();
+        let headers = [];
+        let sampleRow = [];
+        if (lastRow > 0 && lastCol > 0) {
+          headers = s.getRange(1, 1, 1, Math.min(lastCol, 30)).getValues()[0];
+        }
+        if (lastRow > 1 && lastCol > 0) {
+          sampleRow = s.getRange(2, 1, 1, Math.min(lastCol, 10)).getValues()[0];
+        }
+        return {
+          name: s.getName(),
+          rowCount: lastRow,
+          colCount: lastCol,
+          headers: headers,
+          sampleRow: sampleRow
+        };
+      });
+
+      return createJsonResponse({
+        status: "success",
+        spreadsheetId: SPREADSHEET_ID,
+        totalSheets: sheetsList.length,
+        sheets: sheetsList
+      });
     }
 
     if (action === "get_dashboard") {
@@ -303,22 +338,152 @@ function doGet(e) {
   }
 }
 
+// Clave metodológica oficial de respuestas correctas del Test de Conocimiento (20 ítems LOPCYMAT)
+const KNOWLEDGE_KEY = {
+  1: "A", 2: "C", 3: "B", 4: "B", 5: "A",
+  6: "B", 7: "B", 8: "A", 9: "B", 10: "A",
+  11: "B", 12: "A", 13: "B", 14: "B", 15: "B",
+  16: "B", 17: "B", 18: "A", 19: "B", 20: "B"
+};
+
 /**
- * Procesa y agrega los datos crudos para el consumo visual en Chart.js
+ * Localiza de manera inteligente la pestaña con las respuestas de encuestas,
+ * buscando por nombre oficial, por patrones comunes o por volumen de datos.
+ */
+function findSurveySheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.SURVEY);
+  if (sheet && sheet.getLastRow() > 1) return sheet;
+
+  const allSheets = ss.getSheets();
+  
+  // Buscar pestañas con nombres alusivos a encuestas/respuestas
+  for (let i = 0; i < allSheets.length; i++) {
+    const s = allSheets[i];
+    const name = s.getName().toLowerCase();
+    const isExpert = name.includes("expert") || name.includes("juicio") || name.includes("valida");
+    const isConfig = name.includes("config");
+    if (!isExpert && !isConfig && s.getLastRow() > 1) {
+      if (name.includes("encuesta") || name.includes("respuesta") || name.includes("survey") || 
+          name.includes("form") || name.includes("hoja 1") || name.includes("sheet1") || name.includes("datos")) {
+        return s;
+      }
+    }
+  }
+
+  // Fallback: pestaña con más filas que no sea de expertos o config
+  let bestSheet = null;
+  let maxRows = 1;
+  for (let i = 0; i < allSheets.length; i++) {
+    const s = allSheets[i];
+    const name = s.getName().toLowerCase();
+    const isExpert = name.includes("expert") || name.includes("juicio") || name.includes("valida");
+    const isConfig = name.includes("config");
+    if (!isExpert && !isConfig && s.getLastRow() > maxRows) {
+      maxRows = s.getLastRow();
+      bestSheet = s;
+    }
+  }
+
+  return bestSheet || sheet || allSheets[0];
+}
+
+/**
+ * Localiza la pestaña de juicio de expertos
+ */
+function findExpertSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.EXPERTS);
+  if (sheet && sheet.getLastRow() > 1) return sheet;
+
+  const allSheets = ss.getSheets();
+  for (let i = 0; i < allSheets.length; i++) {
+    const s = allSheets[i];
+    const name = s.getName().toLowerCase();
+    if ((name.includes("expert") || name.includes("juicio") || name.includes("valida")) && 
+        !name.includes("detalle") && !name.includes("item") && s.getLastRow() > 1) {
+      return s;
+    }
+  }
+  return sheet || null;
+}
+
+/**
+ * Procesa y agrega los datos crudos con detección dinámica de columnas y cálculo en tiempo real
  */
 function computeDashboardMetrics(ss) {
-  const surveySheet = ss.getSheetByName(SHEETS.SURVEY);
-  const expertSheet = ss.getSheetByName(SHEETS.EXPERTS);
+  const surveySheet = findSurveySheet(ss);
+  const expertSheet = findExpertSheet(ss);
 
-  // 1. Estadísticas de Encuestas
   let surveyRows = [];
+  const headerMap = {};
+  const detectedSheetName = surveySheet ? surveySheet.getName() : "No detectada";
+
   if (surveySheet && surveySheet.getLastRow() > 1) {
-    surveyRows = surveySheet.getRange(2, 1, surveySheet.getLastRow() - 1, surveySheet.getLastColumn()).getValues();
+    const lastCol = Math.max(1, surveySheet.getLastColumn());
+    const allData = surveySheet.getRange(1, 1, surveySheet.getLastRow(), lastCol).getValues();
+    const rawHeaders = allData[0];
+    
+    // Normalizar encabezados (minúsculas sin espacios ni caracteres especiales)
+    rawHeaders.forEach(function(h, idx) {
+      if (h !== null && h !== undefined) {
+        const norm = String(h).toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+        if (norm) headerMap[norm] = idx;
+      }
+    });
+
+    surveyRows = allData.slice(1);
   }
 
   const totalEncuestados = surveyRows.length;
 
-  // Variables para acumulación
+  // Helper para buscar índice de columna por alias
+  function findColIdx(aliases, defaultIdx) {
+    for (let i = 0; i < aliases.length; i++) {
+      const norm = aliases[i].toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+      if (headerMap[norm] !== undefined) return headerMap[norm];
+    }
+    return defaultIdx;
+  }
+
+  // Mapeo dinámico de columnas sociodemográficas
+  const colSexo = findColIdx(["sexo", "genero"], 4);
+  const colInstruccion = findColIdx(["nivelinstruccion", "instruccion", "educacion", "grado"], 5);
+  const colCargo = findColIdx(["cargohcuamp", "cargo", "puesto", "funcion"], 6);
+  const colFormacion = findColIdx(["formacionsst3anos", "formacionprevia", "formacionsst", "formacion"], 10);
+  const colTipoFormacion = findColIdx(["tipoformacion", "tipo"], 11);
+
+  // Mapeo de columnas de totales y promedios calculados
+  const colTotalKnow = findColIdx(["totalconocimientoptos", "totalconocimiento", "scoreconocimiento", "puntajeconocimiento", "puntajetotal", "conocimientototal"], 35);
+  const colLevelKnow = findColIdx(["nivelconocimiento", "categoriaconocimiento", "nivel"], 36);
+  const colScoreDimA = findColIdx(["scoredimadelegados", "scoredima", "dimadelegados", "delegadosscore"], 37);
+  const colScoreDimB = findColIdx(["scoredimbcssl", "scoredimb", "dimbcssl", "csslscore"], 38);
+  const colScoreDimC = findColIdx(["scoredimcssst", "scoredimc", "dimcssst", "ssstscore"], 39);
+  const colScoreDimD = findColIdx(["scoredimdpsst", "scoredimd", "dimdpsst", "psstscore"], 40);
+
+  const colMediaDimA = findColIdx(["mediadimadelegados", "mediadima", "promediodima"], 61);
+  const colMediaDimB = findColIdx(["mediadimbcssl", "mediadimb", "promediodimb"], 62);
+  const colMediaDimC = findColIdx(["mediadimcssst", "mediadimc", "promediodimc"], 63);
+  const colMediaDimD = findColIdx(["mediadimdpsst", "mediadimd", "promediodimd"], 64);
+  const colOverallLikert = findColIdx(["mediageneralnecesidades", "medialikert", "promediolikert", "promedionecesidades", "mediageneral"], 65);
+  const colLevelLikert = findColIdx(["nivelnecesidad", "categorianecesidad"], 66);
+
+  // Mapeo de columnas individuales de preguntas (P01 a P20)
+  const knowledgeCols = [];
+  for (let q = 1; q <= 20; q++) {
+    const qStr = q < 10 ? "p0" + q : "p" + q;
+    const qAlt = "p" + q;
+    knowledgeCols.push(findColIdx([qStr, qAlt, "pregunta" + q, "preg" + q], 14 + q));
+  }
+
+  // Mapeo de columnas Likert (L21 a L40)
+  const likertCols = [];
+  for (let l = 21; l <= 40; l++) {
+    const lStr = "l" + l;
+    const lAlt = "p" + l;
+    const lNum = "l" + (l - 20);
+    likertCols.push(findColIdx([lStr, lAlt, lNum, "item" + l, "likert" + l], 20 + l));
+  }
+
+  // Variables acumuladoras
   let totalKnowledgeScore = 0;
   let knowledgeLevels = { Bajo: 0, Medio: 0, Alto: 0 };
   let knowledgeDimScores = { dimA: 0, dimB: 0, dimC: 0, dimD: 0 };
@@ -327,83 +492,177 @@ function computeDashboardMetrics(ss) {
   let likertLevels = { "Baja necesidad": 0, "Moderada necesidad": 0, "Alta necesidad": 0 };
   let likertDimScores = { dimA: 0, dimB: 0, dimC: 0, dimD: 0 };
 
-  let cargos = {};
-  let nivelInstruccion = {};
-  let sexo = { Femenino: 0, Masculino: 0, Otro: 0 };
-  let formacionSST = { "Sí": 0, "No": 0 };
-  let tiposFormacion = {};
+  const cargos = {};
+  const nivelInstruccion = {};
+  const sexo = { Femenino: 0, Masculino: 0, Otro: 0 };
+  const formacionSST = { "Sí": 0, "No": 0 };
+  const tiposFormacion = {};
 
-  surveyRows.forEach(row => {
-    // Índices según surveyHeaders:
-    // 4: Sexo, 5: Nivel_Instruccion, 6: Cargo, 10: Formacion_SST_3Anos, 11: Tipo_Formacion
-    // 35: Total_Conocimiento_Ptos, 36: Nivel_Conocimiento, 37: dimA, 38: dimB, 39: dimC, 40: dimD
-    // 61: Media_Dim_A, 62: Media_Dim_B, 63: Media_Dim_C, 64: Media_Dim_D, 65: Media_General, 66: Nivel_Necesidad
-
-    const sx = row[4] || "No especificado";
+  surveyRows.forEach(function(row) {
+    // 1. Datos Sociodemográficos
+    const sx = (colSexo !== -1 && row[colSexo] !== undefined && String(row[colSexo]).trim()) ? String(row[colSexo]).trim() : "No especificado";
     sexo[sx] = (sexo[sx] || 0) + 1;
 
-    const inst = row[5] || "No especificado";
+    const inst = (colInstruccion !== -1 && row[colInstruccion] !== undefined && String(row[colInstruccion]).trim()) ? String(row[colInstruccion]).trim() : "No especificado";
     nivelInstruccion[inst] = (nivelInstruccion[inst] || 0) + 1;
 
-    const cg = row[6] || "No especificado";
+    const cg = (colCargo !== -1 && row[colCargo] !== undefined && String(row[colCargo]).trim()) ? String(row[colCargo]).trim() : "No especificado";
     cargos[cg] = (cargos[cg] || 0) + 1;
 
-    const form = row[10] || "No";
-    formacionSST[form] = (formacionSST[form] || 0) + 1;
+    const form = (colFormacion !== -1 && row[colFormacion] !== undefined && String(row[colFormacion]).trim()) ? String(row[colFormacion]).trim() : "No";
+    const formNorm = (form.toLowerCase().indexOf("s") === 0 || form.toLowerCase() === "si" || form.toLowerCase() === "sí") ? "Sí" : "No";
+    formacionSST[formNorm] = (formacionSST[formNorm] || 0) + 1;
 
-    const tipoF = row[11];
-    if (tipoF && tipoF !== "N/A") {
+    const tipoF = (colTipoFormacion !== -1 && row[colTipoFormacion] !== undefined && String(row[colTipoFormacion]).trim()) ? String(row[colTipoFormacion]).trim() : "";
+    if (tipoF && tipoF !== "N/A" && tipoF !== "Ninguna") {
       tiposFormacion[tipoF] = (tiposFormacion[tipoF] || 0) + 1;
     }
 
-    const kScore = Number(row[35]) || 0;
-    const kLevel = row[36] || "Bajo";
+    // 2. Test de Conocimiento: usar total precalculado o calcular al vuelo
+    let kScore = 0;
+    let kDimA = 0, kDimB = 0, kDimC = 0, kDimD = 0;
+    const hasPrecalcScore = (colTotalKnow !== -1 && row[colTotalKnow] !== "" && row[colTotalKnow] !== null && !isNaN(Number(row[colTotalKnow])));
+
+    if (hasPrecalcScore && Number(row[colTotalKnow]) > 0) {
+      kScore = Number(row[colTotalKnow]);
+      kDimA = Number(row[colScoreDimA]) || 0;
+      kDimB = Number(row[colScoreDimB]) || 0;
+      kDimC = Number(row[colScoreDimC]) || 0;
+      kDimD = Number(row[colScoreDimD]) || 0;
+    } else {
+      // Cálculo dinámico ítem por ítem con clave metodológica
+      for (let i = 0; i < 20; i++) {
+        const cIdx = knowledgeCols[i];
+        if (cIdx !== -1 && row[cIdx] !== undefined) {
+          const val = String(row[cIdx]).trim().toUpperCase();
+          const expected = KNOWLEDGE_KEY[i + 1];
+          let isCorrect = false;
+          if (val === "1" || val === "TRUE" || val === "VERDADERO" || val === "SÍ" || val === "SI") {
+            isCorrect = true;
+          } else if (val === expected || val.indexOf(expected + ")") === 0 || val.indexOf(expected + ".") === 0 || val.indexOf(expected + " ") === 0) {
+            isCorrect = true;
+          }
+          if (isCorrect) {
+            kScore += 1;
+            if (i < 5) kDimA += 1;
+            else if (i < 10) kDimB += 1;
+            else if (i < 15) kDimC += 1;
+            else kDimD += 1;
+          }
+        }
+      }
+    }
+
     totalKnowledgeScore += kScore;
-    if (knowledgeLevels[kLevel] !== undefined) knowledgeLevels[kLevel]++;
-    else knowledgeLevels["Bajo"]++;
+    let kLevel = "Bajo";
+    if (kScore >= 16) kLevel = "Alto";
+    else if (kScore >= 11) kLevel = "Medio";
+    knowledgeLevels[kLevel] = (knowledgeLevels[kLevel] || 0) + 1;
 
-    knowledgeDimScores.dimA += Number(row[37]) || 0;
-    knowledgeDimScores.dimB += Number(row[38]) || 0;
-    knowledgeDimScores.dimC += Number(row[39]) || 0;
-    knowledgeDimScores.dimD += Number(row[40]) || 0;
+    knowledgeDimScores.dimA += kDimA;
+    knowledgeDimScores.dimB += kDimB;
+    knowledgeDimScores.dimC += kDimC;
+    knowledgeDimScores.dimD += kDimD;
 
-    const lMean = Number(row[65]) || 0;
-    const lLevel = row[66] || "Moderada necesidad";
+    // 3. Escala Likert de Necesidades: usar total precalculado o promediar al vuelo
+    let lMean = 0;
+    let lDimA = 0, lDimB = 0, lDimC = 0, lDimD = 0;
+    const hasPrecalcLikert = (colOverallLikert !== -1 && row[colOverallLikert] !== "" && row[colOverallLikert] !== null && !isNaN(Number(row[colOverallLikert])));
+
+    if (hasPrecalcLikert && Number(row[colOverallLikert]) > 0) {
+      lMean = Number(row[colOverallLikert]);
+      lDimA = Number(row[colMediaDimA]) || 0;
+      lDimB = Number(row[colMediaDimB]) || 0;
+      lDimC = Number(row[colMediaDimC]) || 0;
+      lDimD = Number(row[colMediaDimD]) || 0;
+    } else {
+      let sumAll = 0, countAll = 0;
+      let sumA = 0, countA = 0;
+      let sumB = 0, countB = 0;
+      let sumC = 0, countC = 0;
+      let sumD = 0, countD = 0;
+
+      for (let i = 0; i < 20; i++) {
+        const cIdx = likertCols[i];
+        if (cIdx !== -1 && row[cIdx] !== undefined) {
+          const numVal = parseFloat(String(row[cIdx]).replace(/[^0-9.]/g, ''));
+          if (!isNaN(numVal) && numVal >= 1 && numVal <= 5) {
+            sumAll += numVal;
+            countAll++;
+            if (i < 5) { sumA += numVal; countA++; }
+            else if (i < 10) { sumB += numVal; countB++; }
+            else if (i < 15) { sumC += numVal; countC++; }
+            else { sumD += numVal; countD++; }
+          }
+        }
+      }
+
+      lMean = countAll > 0 ? (sumAll / countAll) : 0;
+      lDimA = countA > 0 ? (sumA / countA) : 0;
+      lDimB = countB > 0 ? (sumB / countB) : 0;
+      lDimC = countC > 0 ? (sumC / countC) : 0;
+      lDimD = countD > 0 ? (sumD / countD) : 0;
+    }
+
     totalLikertMean += lMean;
-    if (likertLevels[lLevel] !== undefined) likertLevels[lLevel]++;
-    else likertLevels["Moderada necesidad"]++;
+    let lLevel = "Moderada necesidad";
+    if (lMean > 3.50) lLevel = "Alta necesidad";
+    else if (lMean <= 2.50) lLevel = "Baja necesidad";
+    likertLevels[lLevel] = (likertLevels[lLevel] || 0) + 1;
 
-    likertDimScores.dimA += Number(row[61]) || 0;
-    likertDimScores.dimB += Number(row[62]) || 0;
-    likertDimScores.dimC += Number(row[63]) || 0;
-    likertDimScores.dimD += Number(row[64]) || 0;
+    likertDimScores.dimA += lDimA;
+    likertDimScores.dimB += lDimB;
+    likertDimScores.dimC += lDimC;
+    likertDimScores.dimD += lDimD;
   });
 
-  const avgKnowledge = totalEncuestados > 0 ? (totalKnowledgeScore / totalEncuestados).toFixed(2) : 0;
-  const avgLikert = totalEncuestados > 0 ? (totalLikertMean / totalEncuestados).toFixed(2) : 0;
+  const avgKnowledge = totalEncuestados > 0 ? (totalKnowledgeScore / totalEncuestados).toFixed(2) : "0.00";
+  const avgLikert = totalEncuestados > 0 ? (totalLikertMean / totalEncuestados).toFixed(2) : "0.00";
 
   const avgKnowledgeDims = {
-    dimA: totalEncuestados > 0 ? (knowledgeDimScores.dimA / totalEncuestados).toFixed(2) : 0,
-    dimB: totalEncuestados > 0 ? (knowledgeDimScores.dimB / totalEncuestados).toFixed(2) : 0,
-    dimC: totalEncuestados > 0 ? (knowledgeDimScores.dimC / totalEncuestados).toFixed(2) : 0,
-    dimD: totalEncuestados > 0 ? (knowledgeDimScores.dimD / totalEncuestados).toFixed(2) : 0
+    dimA: totalEncuestados > 0 ? (knowledgeDimScores.dimA / totalEncuestados).toFixed(2) : "0.00",
+    dimB: totalEncuestados > 0 ? (knowledgeDimScores.dimB / totalEncuestados).toFixed(2) : "0.00",
+    dimC: totalEncuestados > 0 ? (knowledgeDimScores.dimC / totalEncuestados).toFixed(2) : "0.00",
+    dimD: totalEncuestados > 0 ? (knowledgeDimScores.dimD / totalEncuestados).toFixed(2) : "0.00"
   };
 
   const avgLikertDims = {
-    dimA: totalEncuestados > 0 ? (likertDimScores.dimA / totalEncuestados).toFixed(2) : 0,
-    dimB: totalEncuestados > 0 ? (likertDimScores.dimB / totalEncuestados).toFixed(2) : 0,
-    dimC: totalEncuestados > 0 ? (likertDimScores.dimC / totalEncuestados).toFixed(2) : 0,
-    dimD: totalEncuestados > 0 ? (likertDimScores.dimD / totalEncuestados).toFixed(2) : 0
+    dimA: totalEncuestados > 0 ? (likertDimScores.dimA / totalEncuestados).toFixed(2) : "0.00",
+    dimB: totalEncuestados > 0 ? (likertDimScores.dimB / totalEncuestados).toFixed(2) : "0.00",
+    dimC: totalEncuestados > 0 ? (likertDimScores.dimC / totalEncuestados).toFixed(2) : "0.00",
+    dimD: totalEncuestados > 0 ? (likertDimScores.dimD / totalEncuestados).toFixed(2) : "0.00"
   };
 
-  // 2. Estadísticas de Juicio de Expertos
+  // 2. Estadísticas de Juicio de Expertos con mapeo flexible
   let expertRows = [];
+  const expertHeaderMap = {};
   if (expertSheet && expertSheet.getLastRow() > 1) {
-    expertRows = expertSheet.getRange(2, 1, expertSheet.getLastRow() - 1, expertSheet.getLastColumn()).getValues();
+    const lastColExp = Math.max(1, expertSheet.getLastColumn());
+    const allExpData = expertSheet.getRange(1, 1, expertSheet.getLastRow(), lastColExp).getValues();
+    allExpData[0].forEach(function(h, idx) {
+      if (h !== null && h !== undefined) {
+        const norm = String(h).toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+        if (norm) expertHeaderMap[norm] = idx;
+      }
+    });
+    expertRows = allExpData.slice(1);
   }
 
+  function findExpColIdx(aliases, defaultIdx) {
+    for (let i = 0; i < aliases.length; i++) {
+      const norm = aliases[i].toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+      if (expertHeaderMap[norm] !== undefined) return expertHeaderMap[norm];
+    }
+    return defaultIdx;
+  }
+
+  const colExpClaridad = findExpColIdx(["porcclaridad", "claridad", "totalclaridadsi"], 12);
+  const colExpPertinencia = findExpColIdx(["porcpertinencia", "pertinencia", "totalpertinenciasi"], 14);
+  const colExpCoherencia = findExpColIdx(["porccoherencia", "coherencia", "totalcoherenciasi"], 16);
+  const colExpDictamen = findExpColIdx(["dictamenfinal", "dictamen", "resultado"], 17);
+
   const totalExpertos = expertRows.length;
-  let dictamenes = {
+  const dictamenes = {
     "Aprobado sin modificaciones": 0,
     "Aprobado con observaciones": 0,
     "No Aprobado": 0
@@ -412,23 +671,22 @@ function computeDashboardMetrics(ss) {
   let sumPertinencia = 0;
   let sumCoherencia = 0;
 
-  expertRows.forEach(row => {
-    // expertHeaders: 12: Porc_Claridad, 14: Porc_Pertinencia, 16: Porc_Coherencia, 17: Dictamen_Final
-    const cl = parseFloat(String(row[12]).replace("%", "")) || 0;
-    const pt = parseFloat(String(row[14]).replace("%", "")) || 0;
-    const ch = parseFloat(String(row[16]).replace("%", "")) || 0;
+  expertRows.forEach(function(row) {
+    const cl = parseFloat(String(row[colExpClaridad] || "").replace(/[^0-9.]/g, "")) || 0;
+    const pt = parseFloat(String(row[colExpPertinencia] || "").replace(/[^0-9.]/g, "")) || 0;
+    const ch = parseFloat(String(row[colExpCoherencia] || "").replace(/[^0-9.]/g, "")) || 0;
     sumClaridad += cl;
     sumPertinencia += pt;
     sumCoherencia += ch;
 
-    const dict = row[17] || "Aprobado con observaciones";
+    const dict = (colExpDictamen !== -1 && row[colExpDictamen]) ? String(row[colExpDictamen]).trim() : "Aprobado con observaciones";
     if (dictamenes[dict] !== undefined) dictamenes[dict]++;
     else dictamenes["Aprobado con observaciones"]++;
   });
 
-  const avgClaridad = totalExpertos > 0 ? (sumClaridad / totalExpertos).toFixed(1) : 0;
-  const avgPertinencia = totalExpertos > 0 ? (sumPertinencia / totalExpertos).toFixed(1) : 0;
-  const avgCoherencia = totalExpertos > 0 ? (sumCoherencia / totalExpertos).toFixed(1) : 0;
+  const avgClaridad = totalExpertos > 0 ? (sumClaridad / totalExpertos).toFixed(1) : "0.0";
+  const avgPertinencia = totalExpertos > 0 ? (sumPertinencia / totalExpertos).toFixed(1) : "0.0";
+  const avgCoherencia = totalExpertos > 0 ? (sumCoherencia / totalExpertos).toFixed(1) : "0.0";
 
   return {
     summary: {
@@ -436,6 +694,7 @@ function computeDashboardMetrics(ss) {
       avgKnowledgeScore: avgKnowledge,
       avgLikertScore: avgLikert,
       totalExpertos: totalExpertos,
+      sheetDetected: detectedSheetName,
       lastUpdated: new Date()
     },
     knowledge: {
@@ -466,7 +725,7 @@ function computeDashboardMetrics(ss) {
 }
 
 /**
- * Helper para generar respuesta JSON con cabeceras CORS
+ * Helper para generar respuesta JSON con cabeceras estándar
  */
 function createJsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))

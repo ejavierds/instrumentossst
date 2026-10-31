@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const queryParams = new URLSearchParams(req.query).toString();
       const fetchUrl = queryParams ? `${targetUrl}?${queryParams}` : targetUrl;
-      const response = await fetch(fetchUrl);
+      const response = await fetch(fetchUrl, { redirect: 'follow' });
       const data = await response.json();
       return res.status(200).json(data);
     } else if (req.method === 'POST') {
@@ -28,7 +28,8 @@ export default async function handler(req, res) {
         headers: {
           'Content-Type': 'text/plain;charset=utf-8'
         },
-        body: bodyContent
+        body: bodyContent,
+        redirect: 'follow'
       });
       const data = await response.json();
       return res.status(200).json(data);
