@@ -17,8 +17,6 @@ const APP_CONFIG = {
   storageKeyGasUrl: "sst_hcuamp_gas_url",
   storageKeySurveyDraft: "sst_hcuamp_survey_draft",
   storageKeyExpertDraft: "sst_hcuamp_expert_draft",
-  // Credencial de acceso de seguridad al Dashboard
-  dashboardPassword: "Salud_2026",
   // Contacto de la Investigadora Principal
   investigatorPhone: "+58 424-5028314",
   investigatorWhatsappUrl: "https://wa.me/584245028314?text=Hola%20Lcda.%20Mar%C3%ADa%20Pargas%2C%20le%20escribo%20con%20una%20consulta%20sobre%20la%20investigaci%C3%B3n%20en%20SST%20del%20HCUAMP."
@@ -543,9 +541,6 @@ const UI = {
           if (inputGas && !localStorage.getItem(APP_CONFIG.storageKeyGasUrl)) {
             inputGas.value = data.gasUrl;
           }
-        }
-        if (data && data.dashboardPassword) {
-          APP_CONFIG.dashboardPassword = data.dashboardPassword;
         }
         console.log("⚙️ Variables de entorno del servidor cargadas exitosamente.");
       }

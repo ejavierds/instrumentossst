@@ -28,7 +28,7 @@ Su objetivo central es diagnosticar el nivel de conocimiento técnico-legal y la
 - **Módulo 1 (Encuesta al Personal):** Acceso público abierto para los gerentes y supervisores del hospital, precedido por la aceptación obligatoria del Consentimiento Informado.
 - **Módulo 2 (Juicio de Expertos):** Interfaz para especialistas metodológicos y médicos ocupacionales con emisión de dictamen y declaración jurada.
 - **Módulo 3 (Dashboard Estadístico):** Acceso protegido mediante credencial de seguridad.  
-  👉 **Contraseña de Acceso:** `Salud_2026`  
+  👉 **Contraseña de Acceso:** Gestionada mediante la variable de entorno `DASHBOARD_PASSWORD`  
   *(Permite visualizar los indicadores analíticos consolidados en tiempo real).*
 
 ---
@@ -116,7 +116,7 @@ En el panel de configuración de su servicio de alojamiento web, configure las s
    - **Valor (Value):** `https://script.google.com/macros/s/AKfycbwnvzDi1tY360LgFpESlfPMFkr2ZgLenTL-3fIm5E_zyyB0q13gztiTbgY2POTIn34/exec`
 2. **Contraseña de Seguridad (Dashboard y Configuración):**
    - **Nombre de la Variable (Key):** `DASHBOARD_PASSWORD`
-   - **Valor (Value):** `Salud_2026` (o la contraseña personalizada de su preferencia)
+   - **Valor (Value):** Clave privada definida en las variables de entorno de su despliegue
 
 Gracias a los endpoints serverless `/api/config` y `/api/auth`, el frontend detecta, sincroniza y valida automáticamente estos parámetros en tiempo de ejecución.
 

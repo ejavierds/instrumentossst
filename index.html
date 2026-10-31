@@ -1368,7 +1368,7 @@
   </div>
 
   <!-- =========================================================================
-       MODAL DE AUTENTICACIÓN / CLAVE DE ACCESO AL DASHBOARD (Salud_2026)
+       MODAL DE AUTENTICACIÓN Y CONTROL DE ACCESO SEGURO
        ========================================================================= -->
   <div id="dashboard-auth-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-white max-w-md w-full rounded-3xl p-6 sm:p-7 text-center border border-sky-300 shadow-2xl transform transition-all text-slate-800">
@@ -1838,10 +1838,6 @@
         // Fallback a validación cliente si se ejecuta en modo estático
       }
 
-      // 2. Validación de respaldo contra variable de entorno cargada en cliente
-      if (!isAuthorized && pass === APP_CONFIG.dashboardPassword) {
-        isAuthorized = true;
-      }
 
       if (isAuthorized) {
         sessionStorage.setItem("sst_dashboard_auth", "true");
