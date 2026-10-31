@@ -1,6 +1,5 @@
 /**
- * Vercel Serverless Function: /api/proxy
- * Proxy seguro para peticiones GET y POST hacia Google Apps Script usando la variable de entorno GAS_URL
+ * Proxy seguro para peticiones GET y POST hacia el endpoint central usando la variable de entorno GAS_URL
  */
 
 export default async function handler(req, res) {
@@ -19,28 +18,28 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const queryParams = new URLSearchParams(req.query).toString();
       const fetchUrl = queryParams ? `${targetUrl}?${queryParams}` : targetUrl;
-      const gasResponse = await fetch(fetchUrl);
-      const data = await gasResponse.json();
+      const response = await fetch(fetchUrl);
+      const data = await response.json();
       return res.status(200).json(data);
     } else if (req.method === 'POST') {
       const bodyContent = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
-      const gasResponse = await fetch(targetUrl, {
+      const response = await fetch(targetUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain;charset=utf-8'
         },
         body: bodyContent
       });
-      const data = await gasResponse.json();
+      const data = await response.json();
       return res.status(200).json(data);
     } else {
       return res.status(405).json({ status: 'error', message: 'Método HTTP no permitido.' });
     }
   } catch (error) {
-    console.error("Error en proxy de Google Apps Script:", error);
+    console.error("Error en proxy del servidor:", error);
     return res.status(500).json({
       status: 'error',
-      message: 'Fallo al conectar con el backend de Google Apps Script: ' + error.message
+      message: 'Fallo al conectar con el servidor central: ' + error.message
     });
   }
 }
