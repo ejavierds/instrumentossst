@@ -11,8 +11,8 @@ const APP_CONFIG = {
   sede: "Hospital Central Universitario Dr. Antonio María Pineda (HCUAMP) - Barquisimeto",
   year: 2026,
   sheetId: "1Xyy-vs2PJMxunvcCCMACMet9MMNsxq3fG2BkSk5AxDc",
-  // URL por defecto para la Web App de Google Apps Script (el usuario puede actualizarla desde la UI)
-  defaultGasUrl: "", 
+  // URL por defecto para la Web App de Google Apps Script (también sincronizada con variable de entorno en Vercel)
+  defaultGasUrl: "https://script.google.com/macros/s/AKfycbwnvzDi1tY360LgFpESlfPMFkr2ZgLenTL-3fIm5E_zyyB0q13gztiTbgY2POTIn34/exec", 
   storageKeyGasUrl: "sst_hcuamp_gas_url",
   storageKeySurveyDraft: "sst_hcuamp_survey_draft",
   storageKeyExpertDraft: "sst_hcuamp_expert_draft"
@@ -524,6 +524,25 @@ const UI = {
 
   getGasUrl() {
     return localStorage.getItem(APP_CONFIG.storageKeyGasUrl) || APP_CONFIG.defaultGasUrl;
+  },
+
+  async initVercelEnv() {
+    try {
+      const response = await fetch('/api/config');
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.gasUrl) {
+          APP_CONFIG.defaultGasUrl = data.gasUrl;
+          const inputGas = document.getElementById("gas-url-input");
+          if (inputGas && !localStorage.getItem(APP_CONFIG.storageKeyGasUrl)) {
+            inputGas.value = data.gasUrl;
+          }
+          console.log("⚙️ Configuración cargada desde Vercel:", data);
+        }
+      }
+    } catch (e) {
+      // Si corre en entorno local estático, usa la URL predefinida
+    }
   },
 
   setGasUrl(url) {

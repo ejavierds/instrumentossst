@@ -1275,7 +1275,10 @@
     }
 
     // Inicialización global al cargar la página
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Sincronizar variable de entorno desde Vercel si está disponible
+      await UI.initVercelEnv();
+
       // Cargar URL guardada en input de configuración
       const inputGas = document.getElementById("gas-url-input");
       if (inputGas) inputGas.value = UI.getGasUrl();

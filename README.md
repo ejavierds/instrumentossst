@@ -108,25 +108,31 @@ Su objetivo central es diagnosticar el nivel de conocimiento técnico-legal y la
 
 ## 🌐 Guía de Despliegue en GitHub y Vercel
 
-### Paso 1: Subir el proyecto a un repositorio de GitHub
+### Paso 1: Subir el proyecto al repositorio de GitHub
+El repositorio oficial del proyecto es [https://github.com/ejavierds/instrumentossst](https://github.com/ejavierds/instrumentossst).
+Para subir o sincronizar los cambios:
 ```bash
-git init
 git add .
-git commit -m "feat: implementacion completa sst hcuamp unerg 2026"
+git commit -m "feat: integracion variable de entorno vercel y endpoint gas"
 git branch -M main
-git remote add origin https://github.com/TU_USUARIO/sst-hcuamp-unerg.git
 git push -u origin main
 ```
 
 ### Paso 2: Importar y desplegar en Vercel
 1. Inicie sesión en [Vercel](https://vercel.com).
 2. Haga clic en **Add New... → Project**.
-3. Seleccione el repositorio de GitHub `sst-hcuamp-unerg`.
+3. Seleccione el repositorio de GitHub `ejavierds/instrumentossst`.
 4. En la configuración del proyecto:
    - **Framework Preset:** `Other`
    - **Root Directory:** `./`
-5. Haga clic en **Deploy**.
-6. En menos de un minuto, su aplicación estará en línea con dominio HTTPS oficial (ej: `https://sst-hcuamp-unerg.vercel.app`), con soporte completo para dispositivos móviles y conexión directa a Google Sheets.
+5. **Configurar la Variable de Entorno (Environment Variables):**
+   - En la sección **Environment Variables**, agregue la siguiente clave y valor:
+     - **Key:** `GAS_URL`
+     - **Value:** `https://script.google.com/macros/s/AKfycbwnvzDi1tY360LgFpESlfPMFkr2ZgLenTL-3fIm5E_zyyB0q13gztiTbgY2POTIn34/exec`
+     - **Target:** Seleccione *Production*, *Preview* y *Development*.
+   - Haga clic en **Add**.
+6. Haga clic en **Deploy**.
+7. La aplicación estará en línea inmediatamente. Gracias a la función serverless `/api/config`, el frontend leerá automáticamente la variable de entorno `GAS_URL` desde Vercel sin necesidad de configuraciones manuales adicionales.
 
 ---
 
